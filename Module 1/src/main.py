@@ -91,6 +91,7 @@ def main(num_layers, layers_size, hidden_activation_function, output_activation_
 
 
 if __name__ == '__main__':
+    '''Scenario-defining parameters'''
     num_layers = 0
     layers_size = []
     hidden_activation_function = ""
