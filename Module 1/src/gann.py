@@ -13,19 +13,6 @@ ACTIVATION_FUNCTIONS = {
     "tanh": tf.nn.tanh
 }
 
-COST_FUNCTIONS = {
-    "mean-squared-error": tf.reduce_mean,
-    "cross-entropy": tf.reduce_mean
-    # TODO - How to do this?
-}
-
-OPTIMIZERS = {
-    "gradient-descent": tf.train.GradientDescentOptimizer,
-    "rmsprop": tf.train.RMSPropOptimizer,
-    "adam": tf.train.AdamOptimizer
-    # TODO - Find out if more is relevant? Different input parameters?
-}
-
 
 class Gann:
     """ For setup of entire general artificial neural network and afterwards run cases """
@@ -62,30 +49,77 @@ class Gann:
     def add_module(self, module): self.modules.append(module)
 
     def build(self):
-        # TODO - build network based on vars
+        """ Build network from input layer to output layer with all hidden layers """
+
         tf.reset_default_graph()  # This is essential for doing multiple runs!!
-        num_inputs = self.dimensions[0]
+
         # Set input layer of network
+        num_inputs = self.dimensions[0]
         self.input = tf.placeholder(tf.float64, shape=(None, num_inputs), name='Input')
+
+        # Build layer modules
         input_variables = self.input
         input_size = num_inputs
-        # Build layer modules
+        output_layer = len(self.dimensions) - 1  # To be used when building the final layer
+
         for i, output_size in enumerate(self.dimensions[1:]):
+            # If building output layer(aka final layer) set activation function to output_activation_function
+            if i == output_layer:
+                activation_function = ACTIVATION_FUNCTIONS[self.output_activation_function]
+            # Else use hidden layer activation function
+            else:
+                activation_function = ACTIVATION_FUNCTIONS[self.hidden_activation_function]
+
+            # Build module
             g_module = GannModule(self, i, input_variables, input_size, output_size, self.init_weight_range,
-                                  self.hidden_activation_function)
-            input_variables = g_module.output  # Input for next module is current layers output
+                                  activation_function)
+
+            # Set input variables for next layer
+            input_variables = g_module.output
             input_size = g_module.output_size
-        self.output = g_module.output_size  # Last layer outputs is output of the whole network
-        self.output = ACTIVATION_FUNCTIONS[self.output_activation_function](self.output)  # Run activation function
+
+        # Last layer outputs is output of the whole network
+        self.output = g_module.output
+
+        # Setup target vector
         self.target = tf.placeholder(tf.float64, shape=(None, g_module.output_size), name='Target')
+
+        # Configure learning
         self.configure_learning()
 
     def configure_learning(self):
-        # TODO - adapt to different cost functions and optimizers
-        self.error = COST_FUNCTIONS[self.cost_function](tf.square(self.target - self.output))
-        self.predictor = self.output  # Simple prediction runs will request the value of output neurons ????????
-        optimizer = OPTIMIZERS[self.optimizer](self.learning_rate)  # Different inputs for other optimizers?
-        self.trainer = optimizer.minimize(self.error, name="Backprop")
+        """ Configure learning for network """
+        
+        self.predictor = self.output  # Simple prediction runs will request the value of output neurons
+
+        # Setup error function
+        if self.cost_function == "mean-squared-error":
+            self.error = tf.reduce_mean(tf.square(self.target - self.output),
+                                        name="Mean-squared-error")
+        elif self.cost_function == "cross-entropy":
+            self.error = - tf.reduce_mean(tf.reduce_sum(self.target * tf.log(self.output), [1]),
+                                          name='Cross-entropy-error')
+        else:
+            raise Exception("Invalid cost function")
+
+        # Setup optimizer
+        if self.optimizer == "gradient-descent":
+            optimizer = tf.train.GradientDescentOptimizer(self.learning_rate)
+        elif self.optimizer == "rmsprop":
+            optimizer = tf.train.RMSPropOptimizer()  # TODO
+        elif self.optimizer == "adam":
+            optimizer = tf.train.AdamOptimizer()  # TODO
+        elif self.optimizer == "adagrad":
+            optimizer = tf.train.AdagradOptimizer()  # TODO
+        else:
+            raise Exception("Invalid optimizer")
+
+        # Set trainer to minimize error
+        self.trainer = optimizer.minimize(self.error, name="Backpropogation")
+
+    def generate_probe(self, module_index, type, spec):
+        """ Probed variables are to be displayed in the Tensorboard. """
+        self.modules[module_index].gen_probe(type, spec)
 
     def train(self):
         # TODO - run basic training

@@ -1,6 +1,11 @@
 from .gann import Gann, GannModule
 from .case import Case
 
+ACTIVATION_FUNCTION_OPTIONS = ["softmax", "relu", "sigmoid", "tanh"]
+COST_FUNCTION_OPTIONS = ["mean-squared-error", "cross-entropy"]
+OPTIMIZER_OPTIONS = ["gradient-descent", "rmsprop", "adam", "adagrad"]
+
+
 def main(dimensions, hidden_activation_function, output_activation_function, cost_function, learning_rate,
          init_weight_range, optimizer, data_source, case_fraction, validation_fraction, validation_interval,
          test_fraction, minibatch_size, steps, display_weights, display_biases, map_batch_size, map_layers,
