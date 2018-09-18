@@ -31,6 +31,9 @@ class Gann:
         self.map_layers = map_layers
         self.map_dendrograms = map_dendrograms
 
+        # Build network
+        self.build()
+
     def build(self):
         # TODO - build network based on vars
         return
@@ -55,9 +58,15 @@ class Gann:
 class GannLayer:
     """ For setup of single gann layer """
 
-    def __init__(self):
-        # TODO - initialize layer vars
-        return
+    def __init__(self, ann, index, input_variable, input_size, output_size):
+        self.ann = ann
+        self.index = index
+        self.input_variable = input_variable  # Either the gann's input variable or the upstream module's output
+        self.input_size = input_size  # Number of neurons feeding into this module
+        self.output_size = output_size  # Number of neurons in this module
+
+        # Build layer
+        self.build()
 
     def build(self):
         # TODO - build layer based on vars
