@@ -5,6 +5,27 @@ import matplotlib.pyplot as PLT
 import util.tflowtools as TFT
 
 
+ACTIVATION_FUNCTIONS = {
+    "softmax": tf.nn.softmax,
+    "relu": tf.nn.relu,
+    "sigmoid": tf.sigmoid,
+    "tanh": tf.tanh
+    # TODO - Find out if more is relevant?
+}
+
+COST_FUNCTIONS = {
+    "mean-squared-error": tf.reduce_mean,
+    "cross-entropy": tf.reduce_mean
+    # TODO - How to do this?
+}
+
+OPTIMIZERS = {
+    "gradient-descent": tf.train.GradientDescentOptimizer,
+    "rmsprop": tf.train.RMSPropOptimizer,
+    "adam": tf.train.AdamOptimizer
+}
+
+
 class Gann:
     """ For setup of entire general artificial neural network and afterwards run cases """
 
@@ -36,7 +57,26 @@ class Gann:
 
     def build(self):
         # TODO - build network based on vars
-        return
+        tf.reset_default_graph()  # This is essential for doing multiple runs!!
+        num_inputs = self.dimensions[0]
+        self.input = tf.placeholder(tf.float64, shape=(None, num_inputs), name='Input')
+        input_variables = self.input
+        input_size = num_inputs
+        # Build layers
+        for i, output_size in enumerate(self.dimensions[1:]):
+            g_layer = GannLayer(self, i, input_variables, input_size, output_size)
+            input_variables = g_layer.output
+            input_size = g_layer.output_size
+        self.output = g_layer.output_size  # Last layer outputs in output of the whole network
+        self.output = ACTIVATION_FUNCTIONS[self.output_activation_function](self.output)  # Run activation function
+        self.target = tf.placeholder(tf.float64, shape=(None, g_layer.outsize), name='Target')
+        self.configure_learning()
+
+    def configure_learning(self):
+        self.error = COST_FUNCTIONS[self.cost_function](tf.square(self.target - self.output))
+        self.predictor = self.output  # Simple prediction runs will request the value of output neurons ????????
+        optimizer = OPTIMIZERS[self.optimizer](self.learning_rate)  # Different inputs for other optimizers?
+        self.trainer = optimizer.minimize(self.error, name="Backprop")
 
     def train(self):
         # TODO - run basic training
