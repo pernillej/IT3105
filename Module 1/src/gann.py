@@ -89,7 +89,7 @@ class Gann:
 
     def configure_learning(self):
         """ Configure learning for network """
-        
+
         self.predictor = self.output  # Simple prediction runs will request the value of output neurons
 
         # Setup error function
@@ -104,13 +104,43 @@ class Gann:
 
         # Setup optimizer
         if self.optimizer == "gradient-descent":
-            optimizer = tf.train.GradientDescentOptimizer(self.learning_rate)
+            optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
+            '''
+            learning_rate: A Tensor or a floating point value. The learning rate to use.
+            use_locking: If True use locks for update operations.
+            '''
         elif self.optimizer == "rmsprop":
-            optimizer = tf.train.RMSPropOptimizer()  # TODO
+            optimizer = tf.train.RMSPropOptimizer(learning_rate=self.learning_rate)
+            # TODO - Customize more?
+            '''
+            learning_rate: A Tensor or a floating point value. The learning rate.
+            decay: Discounting factor for the history/coming gradient
+            momentum: A scalar tensor.
+            epsilon: Small value to avoid zero denominator.
+            use_locking: If True use locks for update operation.
+            centered: If True, gradients are normalized by the estimated variance of the gradient; if False, by the 
+            uncentered second moment. Setting this to True may help with training, but is slightly more expensive in 
+            terms of computation and memory. Defaults to False.
+            '''
         elif self.optimizer == "adam":
-            optimizer = tf.train.AdamOptimizer()  # TODO
+            optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
+            # TODO - Customize more?
+            '''
+            learning_rate: A Tensor or a floating point value. The learning rate.
+            beta1: A float value or a constant float tensor. The exponential decay rate for the 1st moment estimates.
+            beta2: A float value or a constant float tensor. The exponential decay rate for the 2nd moment estimates.
+            epsilon: A small constant for numerical stability. This epsilon is "epsilon hat" in the Kingma and Ba paper 
+            (in the formula just before Section 2.1), not the epsilon in Algorithm 1 of the paper.
+            use_locking: If True use locks for update operations.
+            '''
         elif self.optimizer == "adagrad":
-            optimizer = tf.train.AdagradOptimizer()  # TODO
+            optimizer = tf.train.AdagradOptimizer(learning_rate=self.learning_rate)
+            # TODO - Customize more?
+            '''
+            learning_rate: A Tensor or a floating point value. The learning rate.
+            initial_accumulator_value: A floating point value. Starting value for the accumulators, must be positive.
+            use_locking: If True use locks for update operations.
+            '''
         else:
             raise Exception("Invalid optimizer")
 
