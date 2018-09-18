@@ -1,4 +1,5 @@
-from .gann import Gann, GannLayer, Case
+from .gann import Gann, GannModule
+from .case import Case
 
 def main(dimensions, hidden_activation_function, output_activation_function, cost_function, learning_rate,
          init_weight_range, optimizer, data_source, case_fraction, validation_fraction, validation_interval,

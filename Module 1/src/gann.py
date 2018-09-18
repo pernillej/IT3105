@@ -8,8 +8,8 @@ import util.tflowtools as TFT
 ACTIVATION_FUNCTIONS = {
     "softmax": tf.nn.softmax,
     "relu": tf.nn.relu,
-    "sigmoid": tf.sigmoid,
-    "tanh": tf.tanh
+    "sigmoid": tf.nn.sigmoid,
+    "tanh": tf.nn.tanh
     # TODO - Find out if more is relevant?
 }
 
@@ -23,6 +23,7 @@ OPTIMIZERS = {
     "gradient-descent": tf.train.GradientDescentOptimizer,
     "rmsprop": tf.train.RMSPropOptimizer,
     "adam": tf.train.AdamOptimizer
+    # TODO - Find out if more is relevant? Different input parameters?
 }
 
 
@@ -47,6 +48,9 @@ class Gann:
         self.display_weights = display_weights
         self.display_biases = display_biases
 
+        self.modules = []
+        self.global_training_step = 0  # Enables coherent data-storage during extra training runs (see runmore).
+
         # Map test variables
         self.map_batch_size = map_batch_size
         self.map_layers = map_layers
@@ -55,24 +59,29 @@ class Gann:
         # Build network
         self.build()
 
+    def add_module(self, module): self.modules.append(module)
+
     def build(self):
         # TODO - build network based on vars
         tf.reset_default_graph()  # This is essential for doing multiple runs!!
         num_inputs = self.dimensions[0]
+        # Set input layer of network
         self.input = tf.placeholder(tf.float64, shape=(None, num_inputs), name='Input')
         input_variables = self.input
         input_size = num_inputs
-        # Build layers
+        # Build layer modules
         for i, output_size in enumerate(self.dimensions[1:]):
-            g_layer = GannLayer(self, i, input_variables, input_size, output_size)
-            input_variables = g_layer.output
-            input_size = g_layer.output_size
-        self.output = g_layer.output_size  # Last layer outputs in output of the whole network
+            g_module = GannModule(self, i, input_variables, input_size, output_size, self.init_weight_range,
+                                  self.hidden_activation_function)
+            input_variables = g_module.output  # Input for next module is current layers output
+            input_size = g_module.output_size
+        self.output = g_module.output_size  # Last layer outputs is output of the whole network
         self.output = ACTIVATION_FUNCTIONS[self.output_activation_function](self.output)  # Run activation function
-        self.target = tf.placeholder(tf.float64, shape=(None, g_layer.outsize), name='Target')
+        self.target = tf.placeholder(tf.float64, shape=(None, g_module.output_size), name='Target')
         self.configure_learning()
 
     def configure_learning(self):
+        # TODO - adapt to different cost functions and optimizers
         self.error = COST_FUNCTIONS[self.cost_function](tf.square(self.target - self.output))
         self.predictor = self.output  # Simple prediction runs will request the value of output neurons ????????
         optimizer = OPTIMIZERS[self.optimizer](self.learning_rate)  # Different inputs for other optimizers?
@@ -94,61 +103,55 @@ class Gann:
         # TODO - test on test set
         return
 
+    def run(self):
+        # TODO - function to be called by main.py
+        return
 
-class GannLayer:
-    """ For setup of single gann layer """
 
-    def __init__(self, ann, index, input_variable, input_size, output_size):
+class GannModule:
+    """ For setup of single gann module = layer of neurons (the output) plus incoming weights and biases """
+
+    def __init__(self, ann, index, input_variables, input_size, output_size, weight_range, activation_function):
         self.ann = ann
         self.index = index
-        self.input_variable = input_variable  # Either the gann's input variable or the upstream module's output
+        self.input = input_variables  # Either the gann's input variable or the upstream module's output
         self.input_size = input_size  # Number of neurons feeding into this module
         self.output_size = output_size  # Number of neurons in this module
-
+        self.weight_range = weight_range  # Lower and upper bound for random weight initializing
+        self.activation_function = activation_function
+        self.name = "Module-" + str(self.index)
         # Build layer
         self.build()
 
     def build(self):
-        # TODO - build layer based on vars
-        return
+        name = self.name
+        n = self.output_size
+        lower_weight_bound = self.weight_range[0]
+        upper_weight_bound = self.weight_range[1]
+        self.weights = tf.Variable(np.random.uniform(lower_weight_bound, upper_weight_bound, size=(self.input_size, n)),
+                                   name=name + '-wgt', trainable=True)  # True = default for trainable anyway
+        self.biases = tf.Variable(np.random.uniform(-.1, .1, size=n),
+                                  name=name + '-bias', trainable=True)  # First bias vector
+        self.output = ACTIVATION_FUNCTIONS[self.activation_function](tf.matmul(self.input, self.weights) + self.biases,
+                                                                     name=name + '-out')
+        self.ann.add_module(self)
 
+    def getvar(self,type):  # type = (in,out,wgt,bias)
+        return {'in': self.input, 'out': self.output, 'wgt': self.weights, 'bias': self.biases}[type]
 
-class Case:
-    """ For managing cases """
+    # spec, a list, can contain one or more of (avg,max,min,hist); type = (in, out, wgt, bias)
+    def generate_probe(self, type, spec):
+        var = self.get_variable(type)
+        base = self.name + '_' + type
+        with tf.name_scope('probe_'):
+            if ('avg' in spec) or ('stdev' in spec):
+                avg = tf.reduce_mean(var)
+            if 'avg' in spec:
+                tf.summary.scalar(base + '/avg/', avg)
+            if 'max' in spec:
+                tf.summary.scalar(base + '/max/', tf.reduce_max(var))
+            if 'min' in spec:
+                tf.summary.scalar(base + '/min/', tf.reduce_min(var))
+            if 'hist' in spec:
+                    tf.summary.histogram(base + '/hist/', var)
 
-    def __init__(self, data_source, validation_fraction, test_fraction, case_fraction=1.0):
-        self.data_source = data_source
-        self.case_fraction = case_fraction
-        self.validation_fraction = validation_fraction
-        self.test_fraction = test_fraction
-        self.training_fraction = 1 - (validation_fraction + test_fraction)
-
-        self.cases = None
-        self.training_cases = None
-        self.validation_cases = None
-        self.testing_cases = None
-        self.generate_cases()
-        self.organize_cases()
-
-    def generate_cases(self):
-        self.cases = self.data_source()  # Run the case generator.  Case = [input-vector, target-vector]
-
-    def organize_cases(self):
-        cases = np.array(self.cases)
-        np.random.shuffle(cases)  # Randomly shuffle all cases
-        if self.case_fraction != 1.0:  # Reduce huge data files
-            sep = round(len(self.cases) * self.case_fraction)
-            cases = cases[0:sep]
-        training_sep = round(len(cases) * self.training_fraction)
-        validation_sep = training_sep + round(len(cases) * self.validation_fraction)
-        self.training_cases = cases[0:training_sep]
-        self.validation_cases = cases[training_sep:validation_sep]
-        self.testing_cases = cases[validation_sep:]
-
-    def get_training_cases(self): return self.training_cases
-
-    def get_validation_cases(self): return self.validation_cases
-
-    def get_testing_cases(self): return self.testing_cases
-
-    # TODO - implement data_source functions
