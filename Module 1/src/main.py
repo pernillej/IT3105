@@ -2,8 +2,8 @@
 
 def main(dimensions, hidden_activation_function, output_activation_function, cost_function, learning_rate,
          init_weight_range, optimizer, data_source, case_fraction, validation_fraction, validation_interval,
-         test_fraction, minibatch_size, steps, display_weights, display_biases,
-         map_batch_size, map_layers, map_dendrograms):
+         test_fraction, minibatch_size, steps, display_weights, display_biases, map_batch_size, map_layers,
+         map_dendrograms):
     """Setup scenario-defining parameters and run
 
     Keyword arguments:
