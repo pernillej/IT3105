@@ -3,6 +3,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as PLT
 import util.tflowtools as TFT
+from .gann_module import GannModule
 
 
 ACTIVATION_FUNCTIONS = {
@@ -10,7 +11,6 @@ ACTIVATION_FUNCTIONS = {
     "relu": tf.nn.relu,
     "sigmoid": tf.nn.sigmoid,
     "tanh": tf.nn.tanh
-    # TODO - Find out if more is relevant?
 }
 
 COST_FUNCTIONS = {
@@ -106,52 +106,3 @@ class Gann:
     def run(self):
         # TODO - function to be called by main.py
         return
-
-
-class GannModule:
-    """ For setup of single gann module = layer of neurons (the output) plus incoming weights and biases """
-
-    def __init__(self, ann, index, input_variables, input_size, output_size, weight_range, activation_function):
-        self.ann = ann
-        self.index = index
-        self.input = input_variables  # Either the gann's input variable or the upstream module's output
-        self.input_size = input_size  # Number of neurons feeding into this module
-        self.output_size = output_size  # Number of neurons in this module
-        self.weight_range = weight_range  # Lower and upper bound for random weight initializing
-        self.activation_function = activation_function
-        self.name = "Module-" + str(self.index)
-        # Build layer
-        self.build()
-
-    def build(self):
-        name = self.name
-        n = self.output_size
-        lower_weight_bound = self.weight_range[0]
-        upper_weight_bound = self.weight_range[1]
-        self.weights = tf.Variable(np.random.uniform(lower_weight_bound, upper_weight_bound, size=(self.input_size, n)),
-                                   name=name + '-wgt', trainable=True)  # True = default for trainable anyway
-        self.biases = tf.Variable(np.random.uniform(-.1, .1, size=n),
-                                  name=name + '-bias', trainable=True)  # First bias vector
-        self.output = ACTIVATION_FUNCTIONS[self.activation_function](tf.matmul(self.input, self.weights) + self.biases,
-                                                                     name=name + '-out')
-        self.ann.add_module(self)
-
-    def getvar(self,type):  # type = (in,out,wgt,bias)
-        return {'in': self.input, 'out': self.output, 'wgt': self.weights, 'bias': self.biases}[type]
-
-    # spec, a list, can contain one or more of (avg,max,min,hist); type = (in, out, wgt, bias)
-    def generate_probe(self, type, spec):
-        var = self.get_variable(type)
-        base = self.name + '_' + type
-        with tf.name_scope('probe_'):
-            if ('avg' in spec) or ('stdev' in spec):
-                avg = tf.reduce_mean(var)
-            if 'avg' in spec:
-                tf.summary.scalar(base + '/avg/', avg)
-            if 'max' in spec:
-                tf.summary.scalar(base + '/max/', tf.reduce_max(var))
-            if 'min' in spec:
-                tf.summary.scalar(base + '/min/', tf.reduce_min(var))
-            if 'hist' in spec:
-                    tf.summary.histogram(base + '/hist/', var)
-
