@@ -1,19 +1,18 @@
 
 
-def main(num_layers, layers_size, hidden_activation_function, output_activation_function, cost_function, learning_rate,
+def main(dimensions, hidden_activation_function, output_activation_function, cost_function, learning_rate,
          init_weight_range, optimizer, data_source, case_fraction, validation_fraction, validation_interval,
-         test_fraction, minibatch_size, map_batch_size, steps, map_layers, map_dendrograms, display_weights,
-         display_biases):
+         test_fraction, minibatch_size, steps, display_weights, display_biases,
+         map_batch_size, map_layers, map_dendrograms):
     """Setup scenario-defining parameters and run
 
     Keyword arguments:
-    num_layers --  Number of layers in the network
-    layers_size -- List with size corresponding to each layer
+    dimensions --  List with sizes of each layer. list-size equals number of layers
     hidden_activation_function -- Function to be used for all hidden layers
     output_activation_function -- Function to be used for output layer
     cost_function -- (a.k.a. loss function) Defines the quantity to be minimized.
     learning_rate -- Learning rate to be used throughout training
-    init_weight_range -- Upper and lower bound to be used when randomly initializing all weights (incl. from bias nodes)
+    init_weight_range -- Upper and lower bound to be used when randomly initializing all weights (incl. for bias nodes)
     optimizer -- Optimizer to be used for training
     data_source -- Data file or function name to get data files
     case_fraction -- Only use a fraction of overly large data files. (default = 1.0)
@@ -21,12 +20,12 @@ def main(num_layers, layers_size, hidden_activation_function, output_activation_
     validation_interval -- Number of training minibatches between each validation test
     test_fraction -- The fraction of the data cases to be used for standard testing
     minibatch_size -- Number of training cases in a minibatch
-    map_batch_size -- Number of training cases to be used for a map test. (Value of 0 means no map tests)
     steps -- Total number of minibatches to be run through the system during training
-    map_layers -- The layers to be visualized during the map test, if run
-    map_dendrograms -- The layers whose activation patterns (during the map test) will be used to produce dendrograms
     display_weights -- The weight arrays to be visualized at the end of the run
     display_biases -- The bias vectors to be visualized at the end of the run.
+    map_batch_size -- Number of training cases to be used for a map test. (Value of 0 means no map tests)
+    map_layers -- The layers to be visualized during the map test, if run
+    map_dendrograms -- The layers whose activation patterns (during the map test) will be used to produce dendrograms
 
     Results:
     1. A plot of the progression of the training-set error from start to end of training. Each data point is the average
@@ -92,8 +91,7 @@ def main(num_layers, layers_size, hidden_activation_function, output_activation_
 
 if __name__ == '__main__':
     '''Scenario-defining parameters'''
-    num_layers = 0
-    layers_size = []
+    dimensions = []
     hidden_activation_function = ""
     output_activation_function = ""
     cost_function = ""
@@ -113,10 +111,10 @@ if __name__ == '__main__':
     display_weights = []
     display_biases = []
 
-    main(num_layers, layers_size, hidden_activation_function, output_activation_function, cost_function, learning_rate,
+    main(dimensions, hidden_activation_function, output_activation_function, cost_function, learning_rate,
          init_weight_range, optimizer, data_source, case_fraction, validation_fraction, validation_interval,
-         test_fraction, minibatch_size, map_batch_size, steps, map_layers, map_dendrograms, display_weights,
-         display_biases)
+         test_fraction, minibatch_size, steps, display_weights, display_biases, map_batch_size, map_layers,
+         map_dendrograms)
 
 
 
