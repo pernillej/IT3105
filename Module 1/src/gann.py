@@ -3,7 +3,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as PLT
 import util.tflowtools as TFT
-from .gann_module import GannModule
+from gann_module import GannModule
 
 
 ACTIVATION_FUNCTIONS = {

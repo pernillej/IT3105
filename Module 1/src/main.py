@@ -1,5 +1,5 @@
-from .gann import Gann, GannModule
-from .case import Case
+from gann import Gann, GannModule
+from case import Case
 
 ACTIVATION_FUNCTION_OPTIONS = ["softmax", "relu", "sigmoid", "tanh"]
 COST_FUNCTION_OPTIONS = ["mean-squared-error", "cross-entropy"]
@@ -54,12 +54,21 @@ def main(dimensions, hidden_activation_function, output_activation_function, cos
     '''
     The Training and Testing Scheme
     '''
-
-    # TODO - Separate the data into training cases, validation cases and test cases where all cases are assumed to
-    # consist of features and labels, i.e., the correct classification.
+    case = Case(data_source, validation_fraction, test_fraction, case_fraction=case_fraction)
+    '''
+    print("Training")
+    print(case.get_training_cases())
+    print("Validation")
+    print(case.get_validation_cases())
+    print("Test")
+    print(case.get_testing_cases())
+    '''
 
     # TODO - Repeatedly pass the training features through the ANN to produce an output value, which yields an error
     # term when compared to the correct classification
+    gann = Gann(dimensions, hidden_activation_function, output_activation_function, cost_function, learning_rate,
+                init_weight_range, optimizer, case, validation_interval, minibatch_size, steps, display_weights,
+                display_biases, map_batch_size=map_batch_size, map_layers=map_layers, map_dendrograms=map_dendrograms)
 
     # TODO - Use error terms as the basis of backpropagation to modify weights in the network,
     # thus learning to correctly classify the training cases.
@@ -97,18 +106,18 @@ def main(dimensions, hidden_activation_function, output_activation_function, cos
 
 if __name__ == '__main__':
     '''Scenario-defining parameters'''
-    dimensions = []
-    hidden_activation_function = ""
-    output_activation_function = ""
-    cost_function = ""
-    learning_rate = 0
-    init_weight_range = (0, 0)
-    optimizer = ""
-    data_source = ""
+    dimensions = [9, 10, 6]
+    hidden_activation_function = "relu"
+    output_activation_function = "softmax"
+    cost_function = "mean-squared-error"
+    learning_rate = 0.1
+    init_weight_range = (0, 1)
+    optimizer = "gradient-descent"
+    data_source = "glass"
     case_fraction = 1
-    validation_fraction = 0
+    validation_fraction = 0.1
     validation_interval = 0
-    test_fraction = 0
+    test_fraction = 0.1
     minibatch_size = 0
     map_batch_size = 0
     steps = 0
