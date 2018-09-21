@@ -36,7 +36,8 @@ class Gann:
         self.display_biases = display_biases
 
         self.modules = []
-        self.global_training_step = 0  # Enables coherent data-storage during extra training runs (see runmore).
+        self.error_history = []
+        self.validation_history = []
 
         # Map test variables
         self.map_batch_size = map_batch_size
@@ -103,6 +104,7 @@ class Gann:
             raise Exception("Invalid cost function")
 
         # Setup optimizer
+        # TODO - Customize more?
         if self.optimizer == "gradient-descent":
             optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
             '''
@@ -111,7 +113,6 @@ class Gann:
             '''
         elif self.optimizer == "rmsprop":
             optimizer = tf.train.RMSPropOptimizer(learning_rate=self.learning_rate)
-            # TODO - Customize more?
             '''
             learning_rate: A Tensor or a floating point value. The learning rate.
             decay: Discounting factor for the history/coming gradient
@@ -124,7 +125,6 @@ class Gann:
             '''
         elif self.optimizer == "adam":
             optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
-            # TODO - Customize more?
             '''
             learning_rate: A Tensor or a floating point value. The learning rate.
             beta1: A float value or a constant float tensor. The exponential decay rate for the 1st moment estimates.
@@ -135,7 +135,6 @@ class Gann:
             '''
         elif self.optimizer == "adagrad":
             optimizer = tf.train.AdagradOptimizer(learning_rate=self.learning_rate)
-            # TODO - Customize more?
             '''
             learning_rate: A Tensor or a floating point value. The learning rate.
             initial_accumulator_value: A floating point value. Starting value for the accumulators, must be positive.
@@ -151,22 +150,83 @@ class Gann:
         """ Probed variables are to be displayed in the Tensorboard. """
         self.modules[module_index].gen_probe(type, spec)
 
-    def train(self):
-        # TODO - run basic training
-        return
+    def run_one_step(self, operators, grab_vars, session, feed_dict, probed_vars=None):
+        grab_vars = grab_vars + self.display_weights + self.display_biases
+        if probed_vars is None:
+            results = session.run([operators, grab_vars], feed_dict=feed_dict)
+        else:
+            results = session.run([operators, grab_vars, probed_vars],
+                                  feed_dict=feed_dict)
+            session.probe_stream.add_summary(results[2])
+        return results[0], results[1], session
 
-    def validation_test(self):
-        # TODO - run validation test
-        return
+    '''
+     In project 1, there is no need to go systematically through the training data.  
+     If the user specifies 1000 "steps" of training, that means 1000 minibatches (of size M, with M also specified by 
+     the user), each drawn randomly from the training data.  There is no need for epochs in project 1.  You are free to 
+     use them if you want, but it's not a requirement.
+    '''
+    def train(self, session, continued=False):
+        if not continued:
+            self.error_history = []
+
+        cases = self.case.get_training_cases()
+        operators = [self.trainer]
+        grab_vars = [self.error]
+
+        for step in range(self.steps):
+            # Create minibatch
+            minibatch = self.get_minibatch(cases)
+            # Turn into feeder dictionary
+            inputs = [c[0] for c in minibatch]
+            targets = [c[1] for c in minibatch]
+            feeder = {self.input: inputs, self.target: targets}
+
+            # Run one step
+            _,grabvals,_ = self.run_one_step(operators, grab_vars, session, feeder)
+
+            # Append error to error history
+            self.error_history.append((step, grabvals[0]))
+
+            # Consider validation testing
+            self.consider_validation_test(step, session)
+
+        TFT.plot_training_history(self.error_history, self.validation_history, xtitle="Epoch", ytitle="Error",
+                                  title="", fig=not continued)
+
+    def get_minibatch(self, cases):
+        num_cases = len(cases)
+        # Get random number between 0 and the highest start index possible, to get desired minibatch size
+        mbstart = np.random.randint(0, num_cases-self.minibatch_size)
+        minibatch = cases[mbstart:mbstart+self.minibatch_size]
+        return minibatch
+
+    def test(self, session, cases):
+        inputs = [c[0] for c in cases]
+        targets = [c[1] for c in cases]
+        feeder = {self.input: inputs, self.target: targets}
+        test_res, grabvals, _ = self.run_one_step(self.error, [], session, feeder)
+        print('%s Set Correct Classifications = %f %%' % ("Testing", 100 * (test_res / len(cases))))
+        return test_res
+
+    def consider_validation_test(self, step, session):
+        if self.validation_interval and (step % self.validation_interval == 0):
+            cases = self.case.get_validation_cases()
+            if len(cases) > 0:
+                error = self.test(session, cases)
+                self.validation_history.append((step, error))
 
     def test_on_training_set(self):
         # TODO - after training, test on training set
         return
 
-    def test(self):
-        # TODO - test on test set
-        return
-
     def run(self):
-        # TODO - function to be called by main.py
-        return
+        session = TFT.gen_initialized_session(dir='probeview')
+        # Run training and validation testing
+        self.train(session)
+        # Test on training set
+        self.test_on_training_set()
+        # Test on test set
+        self.test(session, self.case.get_training_cases())
+        # Close session
+        TFT.close_session(session)

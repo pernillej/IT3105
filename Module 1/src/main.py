@@ -72,6 +72,7 @@ def main(dimensions, hidden_activation_function, output_activation_function, cos
 
     # TODO - Use error terms as the basis of backpropagation to modify weights in the network,
     # thus learning to correctly classify the training cases.
+    gann.run()
 
     # TODO - Intermittently during training, perform a validation test by turning backpropagation learning off and
     # running the complete set of validation cases through the network one time while recording the average error over
@@ -106,21 +107,21 @@ def main(dimensions, hidden_activation_function, output_activation_function, cos
 
 if __name__ == '__main__':
     '''Scenario-defining parameters'''
-    dimensions = [9, 10, 6]
+    dimensions = [10, 10, 2]
     hidden_activation_function = "relu"
     output_activation_function = "softmax"
     cost_function = "mean-squared-error"
     learning_rate = 0.1
     init_weight_range = (0, 1)
     optimizer = "gradient-descent"
-    data_source = "glass"
+    data_source = "parity"
     case_fraction = 1
     validation_fraction = 0.1
     validation_interval = 0
     test_fraction = 0.1
-    minibatch_size = 0
+    minibatch_size = 50
     map_batch_size = 0
-    steps = 0
+    steps = 10
     map_layers = []
     map_dendrograms = []
     display_weights = []
