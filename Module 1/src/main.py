@@ -107,21 +107,21 @@ def main(dimensions, hidden_activation_function, output_activation_function, cos
 
 if __name__ == '__main__':
     '''Scenario-defining parameters'''
-    dimensions = [10, 10, 2]
+    dimensions = [9, 10, 6]
     hidden_activation_function = "relu"
     output_activation_function = "softmax"
     cost_function = "mean-squared-error"
     learning_rate = 0.1
     init_weight_range = (0, 1)
     optimizer = "gradient-descent"
-    data_source = "parity"
+    data_source = "glass"
     case_fraction = 1
     validation_fraction = 0.1
     validation_interval = 0
     test_fraction = 0.1
     minibatch_size = 50
     map_batch_size = 0
-    steps = 10
+    steps = 1000
     map_layers = []
     map_dendrograms = []
     display_weights = []

@@ -195,17 +195,20 @@ class Gann:
                                   title="", fig=not continued)
 
     def get_minibatch(self, cases):
-        num_cases = len(cases)
-        # Get random number between 0 and the highest start index possible, to get desired minibatch size
-        mbstart = np.random.randint(0, num_cases-self.minibatch_size)
-        minibatch = cases[mbstart:mbstart+self.minibatch_size]
+        np.random.shuffle(cases)
+        minibatch = cases[:self.minibatch_size]
         return minibatch
+
+    def gen_match_counter(self, logits, labels, k=1):
+        correct = tf.nn.in_top_k(tf.cast(logits,tf.float32), labels, k)  # Return number of correct outputs
+        return tf.reduce_sum(tf.cast(correct, tf.int32))
 
     def test(self, session, cases):
         inputs = [c[0] for c in cases]
         targets = [c[1] for c in cases]
         feeder = {self.input: inputs, self.target: targets}
-        test_res, grabvals, _ = self.run_one_step(self.error, [], session, feeder)
+        self.test_func = self.gen_match_counter(self.predictor, [TFT.one_hot_to_int(list(v)) for v in targets], k=1)
+        test_res, grabvals, _ = self.run_one_step(self.test_func, [], session=session, feed_dict=feeder)
         print('%s Set Correct Classifications = %f %%' % ("Testing", 100 * (test_res / len(cases))))
         return test_res
 
