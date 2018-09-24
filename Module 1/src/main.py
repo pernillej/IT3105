@@ -54,6 +54,7 @@ def main(dimensions, hidden_activation_function, output_activation_function, cos
     '''
     The Training and Testing Scheme
     '''
+    # Create case
     case = Case(data_source, validation_fraction, test_fraction, case_fraction=case_fraction)
     '''
     print("Training")
@@ -64,28 +65,13 @@ def main(dimensions, hidden_activation_function, output_activation_function, cos
     print(case.get_testing_cases())
     '''
 
-    # TODO - Repeatedly pass the training features through the ANN to produce an output value, which yields an error
-    # term when compared to the correct classification
+    # Build and setup General Artificial Neutral Network
     gann = Gann(dimensions, hidden_activation_function, output_activation_function, cost_function, learning_rate,
                 init_weight_range, optimizer, case, validation_interval, minibatch_size, steps, display_weights,
                 display_biases, map_batch_size=map_batch_size, map_layers=map_layers, map_dendrograms=map_dendrograms)
 
-    # TODO - Use error terms as the basis of backpropagation to modify weights in the network,
-    # thus learning to correctly classify the training cases.
+    # Run training with intermittent validation testing, then test on training set, then test on test set
     gann.run()
-
-    # TODO - Intermittently during training, perform a validation test by turning backpropagation learning off and
-    # running the complete set of validation cases through the network one time while recording the average error over
-    # those cases.
-
-    # TODO - After a pre-specified number of mini-batches have been processed (or when the total training error has been
-    # sufficiently reduced by learning), turn backpropagation off, thereby completing the learning phase.
-
-    # TODO - Run each training case through the ANN one time and record the percentage of correctly-classified cases.
-
-    # TODO - Run each test case through the ANN one time and record the percentage of correctly-classified cases.
-    # Use this percentage as an indicator of the trained ANNs ability to generalize to handle new cases
-    # (i.e., those that it has not explicitly trained on).
 
     '''
     Visualization
@@ -107,21 +93,21 @@ def main(dimensions, hidden_activation_function, output_activation_function, cos
 
 if __name__ == '__main__':
     '''Scenario-defining parameters'''
-    dimensions = [9, 10, 6]
+    dimensions = [11, 100, 50, 6]
     hidden_activation_function = "relu"
     output_activation_function = "softmax"
     cost_function = "mean-squared-error"
-    learning_rate = 0.1
-    init_weight_range = (0, 1)
-    optimizer = "gradient-descent"
-    data_source = "glass"
+    learning_rate = 0.0075
+    init_weight_range = (-0.5, 0.5)
+    optimizer = "adam"
+    data_source = "wine"
     case_fraction = 1
     validation_fraction = 0.1
-    validation_interval = 0
+    validation_interval = 100
     test_fraction = 0.1
-    minibatch_size = 50
+    minibatch_size = 250
     map_batch_size = 0
-    steps = 1000
+    steps = 2500
     map_layers = []
     map_dendrograms = []
     display_weights = []

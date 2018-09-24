@@ -200,35 +200,36 @@ class Gann:
         return minibatch
 
     def gen_match_counter(self, logits, labels, k=1):
-        correct = tf.nn.in_top_k(tf.cast(logits,tf.float32), labels, k)  # Return number of correct outputs
+        correct = tf.nn.in_top_k(tf.cast(logits, tf.float32), labels, k)  # Return number of correct outputs
         return tf.reduce_sum(tf.cast(correct, tf.int32))
 
-    def test(self, session, cases):
+    def test(self, session, cases, msg="Testing"):
         inputs = [c[0] for c in cases]
         targets = [c[1] for c in cases]
         feeder = {self.input: inputs, self.target: targets}
+        # Use in-top-k with k=1
         self.test_func = self.gen_match_counter(self.predictor, [TFT.one_hot_to_int(list(v)) for v in targets], k=1)
         test_res, grabvals, _ = self.run_one_step(self.test_func, [], session=session, feed_dict=feeder)
-        print('%s Set Correct Classifications = %f %%' % ("Testing", 100 * (test_res / len(cases))))
+        print('%s Set Correct Classifications = %f %%' % (msg, 100 * (test_res / len(cases))))
         return test_res
 
     def consider_validation_test(self, step, session):
         if self.validation_interval and (step % self.validation_interval == 0):
             cases = self.case.get_validation_cases()
             if len(cases) > 0:
-                error = self.test(session, cases)
+                error = self.test(session, cases, msg="Validation")
                 self.validation_history.append((step, error))
 
-    def test_on_training_set(self):
-        # TODO - after training, test on training set
-        return
+    def test_on_training_set(self, session):
+        cases = self.case.get_training_cases()
+        self.test(session, cases, msg="Training")
 
     def run(self):
         session = TFT.gen_initialized_session(dir='probeview')
         # Run training and validation testing
         self.train(session)
         # Test on training set
-        self.test_on_training_set()
+        self.test_on_training_set(session)
         # Test on test set
         self.test(session, self.case.get_training_cases())
         # Close session
