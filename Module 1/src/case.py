@@ -57,10 +57,6 @@ class Case:
 
             cases = []
 
-            # Must set modifier to make target vector for some cases, because the classification doesn't start at 1
-            # Wine quality starts at class 3, glass starts at 1, but doesn't have a class 4
-            modifier = -2 if self.data_source == "wine" else -1
-
             for line in raw_data:
 
                 elements = line.strip("\n").split(seperator)
