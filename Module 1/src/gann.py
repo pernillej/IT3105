@@ -233,4 +233,4 @@ class Gann:
         # Test on test set
         self.test(session, self.case.get_training_cases())
         # Close session
-        TFT.close_session(session)
+        TFT.close_session(session, view=False)

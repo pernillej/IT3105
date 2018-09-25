@@ -1,37 +1,13 @@
 from gann import Gann, GannModule
 from case import Case
-
-ACTIVATION_FUNCTION_OPTIONS = ["softmax", "relu", "sigmoid", "tanh"]
-COST_FUNCTION_OPTIONS = ["mean-squared-error", "cross-entropy"]
-OPTIMIZER_OPTIONS = ["gradient-descent", "rmsprop", "adam", "adagrad"]
+from config import CONFIGS
 
 
-def main(dimensions, hidden_activation_function, output_activation_function, cost_function, learning_rate,
-         init_weight_range, optimizer, data_source, case_fraction, validation_fraction, validation_interval,
-         test_fraction, minibatch_size, steps, display_weights, display_biases, map_batch_size, map_layers,
-         map_dendrograms):
+def main(case):
     """Setup scenario-defining parameters and run
 
     Keyword arguments:
-    dimensions --  List with sizes of each layer. list-size equals number of layers
-    hidden_activation_function -- Function to be used for all hidden layers
-    output_activation_function -- Function to be used for output layer
-    cost_function -- (a.k.a. loss function) Defines the quantity to be minimized.
-    learning_rate -- Learning rate to be used throughout training
-    init_weight_range -- Upper and lower bound to be used when randomly initializing all weights (incl. for bias nodes)
-    optimizer -- Optimizer to be used for training
-    data_source -- Data file or function name to get data files
-    case_fraction -- Only use a fraction of overly large data files. (default = 1.0)
-    validation_fraction -- The fraction of data cases to be used for validation testing
-    validation_interval -- Number of training minibatches between each validation test
-    test_fraction -- The fraction of the data cases to be used for standard testing
-    minibatch_size -- Number of training cases in a minibatch
-    steps -- Total number of minibatches to be run through the system during training
-    display_weights -- The weight arrays to be visualized at the end of the run
-    display_biases -- The bias vectors to be visualized at the end of the run.
-    map_batch_size -- Number of training cases to be used for a map test. (Value of 0 means no map tests)
-    map_layers -- The layers to be visualized during the map test, if run
-    map_dendrograms -- The layers whose activation patterns (during the map test) will be used to produce dendrograms
+    case - Config for case to run
 
     Results:
     1. A plot of the progression of the training-set error from start to end of training. Each data point is the average
@@ -52,18 +28,33 @@ def main(dimensions, hidden_activation_function, output_activation_function, cos
     """
 
     '''
+    Setup Scenario Parameters
+    '''
+    dimensions = case["dimensions"]
+    hidden_activation_function = case["hidden_activation_function"]
+    output_activation_function = case["output_activation_function"]
+    cost_function = case["cost_function"]
+    learning_rate = case["learning_rate"]
+    init_weight_range = case["init_weight_range"]
+    optimizer = case["optimizer"]
+    data_source = case["data_source"]
+    case_fraction = case["case_fraction"]
+    validation_fraction = case["validation_fraction"]
+    validation_interval = case["validation_interval"]
+    test_fraction = case["test_fraction"]
+    minibatch_size = case["minibatch_size"]
+    map_batch_size = case["map_batch_size"]
+    steps = case["steps"]
+    map_layers = case["map_layers"]
+    map_dendrograms = case["map_dendrograms"]
+    display_weights = case["display_weights"]
+    display_biases = case["display_biases"]
+
+    '''
     The Training and Testing Scheme
     '''
     # Create case
     case = Case(data_source, validation_fraction, test_fraction, case_fraction=case_fraction)
-    '''
-    print("Training")
-    print(case.get_training_cases())
-    print("Validation")
-    print(case.get_validation_cases())
-    print("Test")
-    print(case.get_testing_cases())
-    '''
 
     # Build and setup General Artificial Neutral Network
     gann = Gann(dimensions, hidden_activation_function, output_activation_function, cost_function, learning_rate,
@@ -91,32 +82,15 @@ def main(dimensions, hidden_activation_function, output_activation_function, cos
     # and the hidden-layer activations that they invoke.
 
 
-if __name__ == '__main__':
-    '''Scenario-defining parameters'''
-    dimensions = [11, 100, 50, 6]
-    hidden_activation_function = "relu"
-    output_activation_function = "softmax"
-    cost_function = "mean-squared-error"
-    learning_rate = 0.0075
-    init_weight_range = (-0.5, 0.5)
-    optimizer = "adam"
-    data_source = "wine"
-    case_fraction = 1
-    validation_fraction = 0.1
-    validation_interval = 100
-    test_fraction = 0.1
-    minibatch_size = 250
-    map_batch_size = 0
-    steps = 2500
-    map_layers = []
-    map_dendrograms = []
-    display_weights = []
-    display_biases = []
+CASES = ["custom", "wine", "glass", "yeast", "hackers-choice", "mnist", "parity", "symmetry", "one-hot-autoencoder",
+         "dense-autoencoder", "bit-counter", "segment-counter"]
 
-    main(dimensions, hidden_activation_function, output_activation_function, cost_function, learning_rate,
-         init_weight_range, optimizer, data_source, case_fraction, validation_fraction, validation_interval,
-         test_fraction, minibatch_size, steps, display_weights, display_biases, map_batch_size, map_layers,
-         map_dendrograms)
+
+if __name__ == '__main__':
+
+    case = CONFIGS["custom"]
+
+    main(case)
 
 
 
