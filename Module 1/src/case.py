@@ -64,7 +64,7 @@ class Case:
                 classification = elements[-1]  # Getting the case classification, the last element
                 case = [float(e) for e in elements[:-1]]
 
-                # Must check if Iris data set, which doesn't have integer classification
+                # If Iris data set, must transform to integer classes
                 if self.data_source == "hackers-choice":
                     iris_classes = {"Iris-setosa": 0, "Iris-versicolor": 1, "Iris-virginica": 2}
                     target[iris_classes[classification]] = 1
@@ -84,24 +84,27 @@ class Case:
                 # Add case and target to cases array
                 cases.append([case, target])
 
-            if not normalize:
-                return cases
+        if not normalize:
+            return cases
 
-            # Else normalize case features
-            maximum = [0] * len(cases[0][0])
-            minimum = [np.inf] * len(cases[0][0])
-            for c in cases:
-                index = 0
-                for feature in c[0]:
-                    if feature > maximum[index]:
-                        maximum[index] = feature
-                    elif feature < minimum[index]:
-                        minimum[index] = feature
-                    index += 1
+        # Else normalize case features
+        return self.normalize_cases(cases)
 
-            for c in range(len(cases)):
-                for j in range(len(cases[c][0])):
-                    cases[c][0][j] = (cases[c][0][j] - minimum[j]) / (maximum[j] - minimum[j])
+    def normalize_cases(self, cases):
+        maximum = [0] * len(cases[0][0])
+        minimum = [np.inf] * len(cases[0][0])
+        for c in cases:
+            index = 0
+            for feature in c[0]:
+                if feature > maximum[index]:
+                    maximum[index] = feature
+                elif feature < minimum[index]:
+                    minimum[index] = feature
+                index += 1
+
+        for c in range(len(cases)):
+            for j in range(len(cases[c][0])):
+                cases[c][0][j] = (cases[c][0][j] - minimum[j]) / (maximum[j] - minimum[j])
 
         return cases
 
