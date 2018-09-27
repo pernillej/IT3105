@@ -107,39 +107,12 @@ class Gann:
         # TODO - Customize more?
         if self.optimizer == "gradient-descent":
             optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
-            '''
-            learning_rate: A Tensor or a floating point value. The learning rate to use.
-            use_locking: If True use locks for update operations.
-            '''
         elif self.optimizer == "rmsprop":
             optimizer = tf.train.RMSPropOptimizer(learning_rate=self.learning_rate)
-            '''
-            learning_rate: A Tensor or a floating point value. The learning rate.
-            decay: Discounting factor for the history/coming gradient
-            momentum: A scalar tensor.
-            epsilon: Small value to avoid zero denominator.
-            use_locking: If True use locks for update operation.
-            centered: If True, gradients are normalized by the estimated variance of the gradient; if False, by the 
-            uncentered second moment. Setting this to True may help with training, but is slightly more expensive in 
-            terms of computation and memory. Defaults to False.
-            '''
         elif self.optimizer == "adam":
             optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
-            '''
-            learning_rate: A Tensor or a floating point value. The learning rate.
-            beta1: A float value or a constant float tensor. The exponential decay rate for the 1st moment estimates.
-            beta2: A float value or a constant float tensor. The exponential decay rate for the 2nd moment estimates.
-            epsilon: A small constant for numerical stability. This epsilon is "epsilon hat" in the Kingma and Ba paper 
-            (in the formula just before Section 2.1), not the epsilon in Algorithm 1 of the paper.
-            use_locking: If True use locks for update operations.
-            '''
         elif self.optimizer == "adagrad":
             optimizer = tf.train.AdagradOptimizer(learning_rate=self.learning_rate)
-            '''
-            learning_rate: A Tensor or a floating point value. The learning rate.
-            initial_accumulator_value: A floating point value. Starting value for the accumulators, must be positive.
-            use_locking: If True use locks for update operations.
-            '''
         else:
             raise Exception("Invalid optimizer")
 
@@ -148,9 +121,12 @@ class Gann:
 
     def generate_probe(self, module_index, type, spec):
         """ Probed variables are to be displayed in the Tensorboard. """
+
         self.modules[module_index].gen_probe(type, spec)
 
     def run_one_step(self, operators, grab_vars, session, feed_dict, probed_vars=None):
+        """ Run one step in network """
+
         grab_vars = grab_vars + self.display_weights + self.display_biases
         if probed_vars is None:
             results = session.run([operators, grab_vars], feed_dict=feed_dict)
@@ -160,13 +136,9 @@ class Gann:
             session.probe_stream.add_summary(results[2])
         return results[0], results[1], session
 
-    '''
-     In project 1, there is no need to go systematically through the training data.  
-     If the user specifies 1000 "steps" of training, that means 1000 minibatches (of size M, with M also specified by 
-     the user), each drawn randomly from the training data.  There is no need for epochs in project 1.  You are free to 
-     use them if you want, but it's not a requirement.
-    '''
     def train(self, session, continued=False):
+        """ Train network the desired number of steps, with intermittent validation testing """
+
         if not continued:
             self.error_history = []
 
@@ -195,6 +167,8 @@ class Gann:
                                   title="", fig=not continued)
 
     def get_minibatch(self, cases):
+        """ Get minibatch from case-set """
+
         np.random.shuffle(cases)
         minibatch = cases[:self.minibatch_size]
         return minibatch
@@ -204,6 +178,8 @@ class Gann:
         return tf.reduce_sum(tf.cast(correct, tf.int32))
 
     def test(self, session, cases, msg="Testing", bestk=False):
+        """ Test on desired case-set, with our without in-top-k """
+
         inputs = [c[0] for c in cases]
         targets = [c[1] for c in cases]
         feeder = {self.input: inputs, self.target: targets}
@@ -219,6 +195,8 @@ class Gann:
         return test_res # self.error uses MSE, so this is a per-case value when bestk=None
 
     def consider_validation_test(self, step, session):
+        """ Check to see if validation testing should be done, based on desired validation step """
+
         if self.validation_interval and (step % self.validation_interval == 0):
             cases = self.case.get_validation_cases()
             if len(cases) > 0:
@@ -226,11 +204,33 @@ class Gann:
                 self.validation_history.append((step, error))
 
     def test_on_training_set(self, session):
+        """ Test on training set """
+
         cases = self.case.get_training_cases()
         self.test(session, cases, msg="Training", bestk=True)
 
+    def open_session(self, probe=False):
+        """ Custom open session """
+
+        if probe:
+            return TFT.gen_initialized_session()
+
+        sess = tf.Session()
+        sess.run(tf.global_variables_initializer())
+        return sess
+
+    def close_session(self, sess, probe=False):
+        """ Custom close session """
+
+        if probe:
+            TFT.close_session(sess)
+
+        sess.close()
+
     def run(self):
-        session = TFT.gen_initialized_session(dir='probeview')
+        """ Run the network """
+
+        session = self.open_session()
         # Run training and validation testing
         self.train(session)
         # Test on training set
@@ -238,4 +238,4 @@ class Gann:
         # Test on test set
         self.test(session, self.case.get_testing_cases(), bestk=True)
         # Close session
-        TFT.close_session(session, view=False)
+        self.close_session(session)
