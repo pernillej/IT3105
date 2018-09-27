@@ -26,8 +26,8 @@ class Case:
         self.organize_cases()
 
     def generate_cases(self):
-        if self.data_source == "mnist":  # TODO
-            return
+        if self.data_source == "mnist":
+            self.cases = self.read_from_mnist()
         elif self.data_source == "wine":
             self.cases = self.read_from_file("./data/winequality_red.txt", seperator=";", num_classes=6)
         elif self.data_source == "glass":
@@ -40,7 +40,7 @@ class Case:
             self.cases = DATA_SET_FUNCTIONS[self.data_source]()
 
     def organize_cases(self):
-        cases = np.array(self.cases)
+        cases = self.cases
         np.random.shuffle(cases)  # Randomly shuffle all cases
         if self.case_fraction != 1.0:  # Reduce huge data files
             sep = round(len(self.cases) * self.case_fraction)
@@ -50,6 +50,19 @@ class Case:
         self.training_cases = cases[0:training_sep]
         self.validation_cases = cases[training_sep:validation_sep]
         self.testing_cases = cases[validation_sep:]
+
+    def read_from_mnist(self):
+        cases = []
+        data = mnist.load_all_flat_cases()
+        feautures = data[0]
+        classes = data[1]
+
+        for i in range(len(feautures)):
+            target = [0] * 10
+            target[classes[i]] = 1
+            cases.append([feautures[i], target])
+
+        return cases
 
     def read_from_file(self, filename, seperator, num_classes, normalize=True):
         with open(filename, "r") as file:

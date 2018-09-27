@@ -88,7 +88,7 @@ CASES = ["custom", "wine", "glass", "yeast", "hackers-choice", "mnist", "parity"
 
 if __name__ == '__main__':
 
-    case = CONFIGS["custom"]
+    case = CONFIGS["mnist"]
 
     main(case)
 

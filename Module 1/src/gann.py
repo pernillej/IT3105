@@ -259,4 +259,4 @@ class Gann:
 
         """ Visualization """
         viz = Visualizer()
-        viz.plot_error(self.error_history, self.validation_history)
+        # viz.plot_error(self.error_history, self.validation_history)
