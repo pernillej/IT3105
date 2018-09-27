@@ -47,7 +47,7 @@ CONFIGS = {
         "display_biases": []
     },
     "glass": {
-        "dimensions": [11, 100, 50, 6],
+        "dimensions": [9, 100, 50, 6],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
@@ -68,7 +68,7 @@ CONFIGS = {
         "display_biases": []
     },
     "yeast": {
-        "dimensions": [11, 100, 50, 6],
+        "dimensions": [8, 100, 50, 10],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
@@ -88,8 +88,8 @@ CONFIGS = {
         "display_weights": [],
         "display_biases": []
     },
-    "hackers-choice": {
-        "dimensions": [11, 100, 50, 6],
+    "hackers-choice": {  # Iris data-set
+        "dimensions": [4, 100, 50, 3],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
@@ -110,7 +110,7 @@ CONFIGS = {
         "display_biases": []
     },
     "mnist": {
-        "dimensions": [11, 100, 50, 6],
+        "dimensions": [784, 100, 50, 10],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
@@ -131,7 +131,7 @@ CONFIGS = {
         "display_biases": []
     },
     "parity": {
-        "dimensions": [11, 100, 50, 6],
+        "dimensions": [10, 100, 50, 2],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
@@ -152,7 +152,7 @@ CONFIGS = {
         "display_biases": []
     },
     "symmetry": {
-        "dimensions": [11, 100, 50, 6],
+        "dimensions": [101, 100, 50, 2],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
@@ -173,7 +173,7 @@ CONFIGS = {
         "display_biases": []
     },
     "one-hot-autoencoder": {
-        "dimensions": [11, 100, 50, 6],
+        "dimensions": [8, 100, 50, 8],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
@@ -194,7 +194,7 @@ CONFIGS = {
         "display_biases": []
     },
     "dense-autoencoder": {
-        "dimensions": [11, 100, 50, 6],
+        "dimensions": [8, 100, 50, 8],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
@@ -215,7 +215,7 @@ CONFIGS = {
         "display_biases": []
     },
     "bit-counter": {
-        "dimensions": [11, 100, 50, 6],
+        "dimensions": [8, 100, 50, 16],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
@@ -236,7 +236,7 @@ CONFIGS = {
         "display_biases": []
     },
     "segment-counter": {
-        "dimensions": [11, 100, 50, 6],
+        "dimensions": [25, 100, 50, 9],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
