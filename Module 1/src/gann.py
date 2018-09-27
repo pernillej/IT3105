@@ -169,7 +169,8 @@ class Gann:
         minibatch = cases[:self.minibatch_size]
         return minibatch
 
-    def gen_match_counter(self, logits, labels, k=1):
+    @staticmethod
+    def gen_match_counter(logits, labels, k=1):
         correct = tf.nn.in_top_k(tf.cast(logits, tf.float32), labels, k)  # Return number of correct outputs
         return tf.reduce_sum(tf.cast(correct, tf.int32))
 
@@ -205,7 +206,8 @@ class Gann:
         cases = self.case.get_training_cases()
         self.test(session, cases, msg="Training", bestk=True)
 
-    def open_session(self, probe=False):
+    @staticmethod
+    def open_session(probe=False):
         """ Custom open session """
 
         if probe:
@@ -215,7 +217,8 @@ class Gann:
         sess.run(tf.global_variables_initializer())
         return sess
 
-    def close_session(self, sess, probe=False):
+    @staticmethod
+    def close_session(sess, probe=False):
         """ Custom close session """
 
         if probe:
