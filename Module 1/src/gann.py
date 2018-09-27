@@ -224,7 +224,7 @@ class Gann:
         sess.close()
 
     def run(self):
-        """ Run the network """
+        """ Run the network and visualize """
 
         session = self.open_session()
         # Run training and validation testing
@@ -236,5 +236,6 @@ class Gann:
         # Close session
         self.close_session(session)
 
+        """ Visualization """
         viz = Visualizer()
         viz.plot_error(self.error_history, self.validation_history)
