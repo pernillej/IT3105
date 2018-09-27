@@ -34,19 +34,40 @@ class Gann:
         self.display_weights = display_weights
         self.display_biases = display_biases
 
-        self.modules = []
-        self.error_history = []
-        self.validation_history = []
-
         # Map test variables
         self.map_batch_size = map_batch_size
         self.map_layers = map_layers
         self.map_dendrograms = map_dendrograms
 
+        self.modules = []
+        self.error_history = []
+        self.validation_history = []
+        self.grabvars = []
+
         # Build network
         self.build()
 
     def add_module(self, module): self.modules.append(module)
+
+    def generate_probe(self, module_index, type, spec):
+        """ Probed variables are to be displayed in the Tensorboard. """
+
+        self.modules[module_index].gen_probe(type, spec)
+
+    def add_grabvars(self):
+
+        def add_grabvar(grabvars, module_index, grab_type):
+            """ Add variable to be displayed by own code"""
+            grabvars.append(self.modules[module_index].get_variable(grab_type))
+
+        grabvars = []
+
+        for weight in self.display_weights:
+            add_grabvar(grabvars, weight, grab_type='wgt')
+        for bias in self.display_biases:
+            add_grabvar(grabvars, bias, grab_type='bias')
+
+        return grabvars
 
     def build(self):
         """ Build network from input layer to output layer with all hidden layers """
@@ -84,6 +105,9 @@ class Gann:
         # Setup target vector
         self.target = tf.placeholder(tf.float64, shape=(None, g_module.output_size), name='Target')
 
+        # Add grabvars
+        # self.grabvars = self.add_grabvars()
+
         # Configure learning
         self.configure_learning()
 
@@ -118,15 +142,10 @@ class Gann:
         # Set trainer to minimize error
         self.trainer = optimizer.minimize(self.error, name="Backpropogation")
 
-    def generate_probe(self, module_index, type, spec):
-        """ Probed variables are to be displayed in the Tensorboard. """
-
-        self.modules[module_index].gen_probe(type, spec)
-
     def run_one_step(self, operators, grab_vars, session, feed_dict, probed_vars=None):
         """ Run one step in network """
 
-        grab_vars = grab_vars + self.display_weights + self.display_biases
+        grab_vars = grab_vars
         if probed_vars is None:
             results = session.run([operators, grab_vars], feed_dict=feed_dict)
         else:
@@ -143,7 +162,7 @@ class Gann:
 
         cases = self.case.get_training_cases()
         operators = [self.trainer]
-        grab_vars = [self.error]
+        grab_vars = [self.error] + self.grabvars
 
         for step in range(1, self.steps + 1):
             # Create minibatch

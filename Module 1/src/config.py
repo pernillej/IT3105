@@ -19,11 +19,11 @@ CONFIGS = {
         "test_fraction": 0.1,
         "minibatch_size": 250,
         "map_batch_size": 0,
-        "steps": 2500,
+        "steps": 1000,
         "map_layers": [],
         "map_dendrograms": [],
-        "display_weights": [],
-        "display_biases": []
+        "display_weights": [0, 1, 2],
+        "display_biases": [0, 1, 2]
     },
     "wine": {
         "dimensions": [11, 100, 50, 6],
