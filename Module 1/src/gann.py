@@ -1,9 +1,8 @@
 import tensorflow as tf
 import numpy as np
-import math
-import matplotlib.pyplot as PLT
 import util.tflowtools as TFT
 from gann_module import GannModule
+from visualizer import Visualizer
 
 
 ACTIVATION_FUNCTIONS = {
@@ -146,7 +145,7 @@ class Gann:
         operators = [self.trainer]
         grab_vars = [self.error]
 
-        for step in range(self.steps):
+        for step in range(1, self.steps + 1):
             # Create minibatch
             minibatch = self.get_minibatch(cases)
             # Turn into feeder dictionary
@@ -162,9 +161,6 @@ class Gann:
 
             # Consider validation testing
             self.consider_validation_test(step, session)
-
-        TFT.plot_training_history(self.error_history, self.validation_history, xtitle="Epoch", ytitle="Error",
-                                  title="", fig=not continued)
 
     def get_minibatch(self, cases):
         """ Get minibatch from case-set """
@@ -192,7 +188,7 @@ class Gann:
             print('%s Set Error = %f ' % (msg, test_res))
         else:
             print('%s Set Correct Classifications = %f %%' % (msg, 100*(test_res/len(cases))))
-        return test_res # self.error uses MSE, so this is a per-case value when bestk=None
+        return test_res  # self.error uses MSE, so this is a per-case value when bestk=None
 
     def consider_validation_test(self, step, session):
         """ Check to see if validation testing should be done, based on desired validation step """
@@ -239,3 +235,6 @@ class Gann:
         self.test(session, self.case.get_testing_cases(), bestk=True)
         # Close session
         self.close_session(session)
+
+        viz = Visualizer()
+        viz.plot_error(self.error_history, self.validation_history)
