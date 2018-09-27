@@ -145,7 +145,6 @@ class Gann:
     def run_one_step(self, operators, grab_vars, session, feed_dict, probed_vars=None):
         """ Run one step in network """
 
-        grab_vars = grab_vars
         if probed_vars is None:
             results = session.run([operators, grab_vars], feed_dict=feed_dict)
         else:
