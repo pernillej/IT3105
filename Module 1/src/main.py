@@ -49,6 +49,7 @@ def main(case):
     map_dendrograms = case["map_dendrograms"]
     display_weights = case["display_weights"]
     display_biases = case["display_biases"]
+    show_interval = case["show_interval"]
 
     '''
     The Training and Testing Scheme
@@ -59,7 +60,8 @@ def main(case):
     # Build and setup General Artificial Neutral Network
     gann = Gann(dimensions, hidden_activation_function, output_activation_function, cost_function, learning_rate,
                 init_weight_range, optimizer, case, validation_interval, minibatch_size, steps, display_weights,
-                display_biases, map_batch_size=map_batch_size, map_layers=map_layers, map_dendrograms=map_dendrograms)
+                display_biases, map_batch_size=map_batch_size, map_layers=map_layers, map_dendrograms=map_dendrograms,
+                show_interval=show_interval)
 
     # Run training with intermittent validation testing, then test on training set, then test on test set
     gann.run()
@@ -67,13 +69,6 @@ def main(case):
     '''
     Visualization
     '''
-
-    # TODO - A plot showing the progression of training-set and validation-set error (as a function of the training
-    # steps, where each step involves the processing of one minibatch).
-
-    # TODO - A display of the weights and biases for any user-chosen areas of the network, for example, the weights
-    # between layers 1 and 2 and the biases for layer 2. Typically, these are only shown at the end of the run, but
-    # displaying them intermittently is also useful.
 
     # TODO - The sets of corresponding activation levels for user-chosen layers that result from a post-training mapping
     #  run (as described in details file).
@@ -88,7 +83,7 @@ CASES = ["custom", "wine", "glass", "yeast", "hackers-choice", "mnist", "parity"
 
 if __name__ == '__main__':
 
-    case = CONFIGS["mnist"]
+    case = CONFIGS["custom"]
 
     main(case)
 

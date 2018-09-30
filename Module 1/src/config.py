@@ -5,25 +5,26 @@ OPTIMIZER_OPTIONS = ["gradient-descent", "rmsprop", "adam", "adagrad"]
 # TODO - Setup to meet reasonably good
 CONFIGS = {
     "custom": {
-        "dimensions": [11, 100, 50, 6],
-        "hidden_activation_function": "relu",
+        "dimensions": [4, 50, 3],
+        "hidden_activation_function": "tanh",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.0075,
         "init_weight_range": (-0.5, 0.5),
         "optimizer": "adam",
-        "data_source": "mnist",
+        "data_source": "hackers-choice",
         "case_fraction": 1,
         "validation_fraction": 0.1,
-        "validation_interval": 10,
-        "test_fraction": 0.1,
-        "minibatch_size": 10,
-        "map_batch_size": 0,
-        "steps": 100,
-        "map_layers": [],
+        "validation_interval": 1000,
+        "test_fraction": 1,
+        "minibatch_size": 100,
+        "map_batch_size": 10,
+        "steps": 10000,
+        "map_layers": [0, 1],
         "map_dendrograms": [],
-        "display_weights": [0, 1, 2],
-        "display_biases": [0, 1, 2]
+        "display_weights": [],
+        "display_biases": [],
+        "show_interval": 1000
     },
     "wine": {
         "dimensions": [11, 100, 50, 6],
@@ -44,7 +45,8 @@ CONFIGS = {
         "map_layers": [],
         "map_dendrograms": [],
         "display_weights": [],
-        "display_biases": []
+        "display_biases": [],
+        "show_interval": 100
     },
     "glass": {
         "dimensions": [9, 100, 50, 6],
@@ -86,7 +88,8 @@ CONFIGS = {
         "map_layers": [],
         "map_dendrograms": [],
         "display_weights": [],
-        "display_biases": []
+        "display_biases": [],
+        "show_interval": 100
     },
     "hackers-choice": {  # Iris data-set
         "dimensions": [4, 100, 50, 3],
@@ -107,15 +110,16 @@ CONFIGS = {
         "map_layers": [],
         "map_dendrograms": [],
         "display_weights": [],
-        "display_biases": []
+        "display_biases": [],
+        "show_interval": 100
     },
     "mnist": {
-        "dimensions": [784, 50, 10],
+        "dimensions": [784, 10, 10],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
-        "learning_rate": 0.001,
-        "init_weight_range": (-0.5, 0.5),
+        "learning_rate": 0.0001,
+        "init_weight_range": (-0.1, 0.1),
         "optimizer": "adam",
         "data_source": "mnist",
         "case_fraction": 0.1,
@@ -127,8 +131,9 @@ CONFIGS = {
         "steps": 1000,
         "map_layers": [],
         "map_dendrograms": [],
-        "display_weights": [],
-        "display_biases": []
+        "display_weights": [0],
+        "display_biases": [],
+        "show_interval": 100
     },
     "parity": {
         "dimensions": [10, 100, 50, 2],
@@ -149,7 +154,8 @@ CONFIGS = {
         "map_layers": [],
         "map_dendrograms": [],
         "display_weights": [],
-        "display_biases": []
+        "display_biases": [],
+        "show_interval": 100
     },
     "symmetry": {
         "dimensions": [101, 100, 50, 2],
@@ -170,7 +176,8 @@ CONFIGS = {
         "map_layers": [],
         "map_dendrograms": [],
         "display_weights": [],
-        "display_biases": []
+        "display_biases": [],
+        "show_interval": 100
     },
     "one-hot-autoencoder": {
         "dimensions": [8, 100, 50, 8],
@@ -191,7 +198,8 @@ CONFIGS = {
         "map_layers": [],
         "map_dendrograms": [],
         "display_weights": [],
-        "display_biases": []
+        "display_biases": [],
+        "show_interval": 100
     },
     "dense-autoencoder": {
         "dimensions": [8, 100, 50, 8],
@@ -212,7 +220,8 @@ CONFIGS = {
         "map_layers": [],
         "map_dendrograms": [],
         "display_weights": [],
-        "display_biases": []
+        "display_biases": [],
+        "show_interval": 100
     },
     "bit-counter": {
         "dimensions": [8, 100, 50, 16],
@@ -233,7 +242,8 @@ CONFIGS = {
         "map_layers": [],
         "map_dendrograms": [],
         "display_weights": [],
-        "display_biases": []
+        "display_biases": [],
+        "show_interval": 100
     },
     "segment-counter": {
         "dimensions": [25, 100, 50, 9],
@@ -254,6 +264,7 @@ CONFIGS = {
         "map_layers": [],
         "map_dendrograms": [],
         "display_weights": [],
-        "display_biases": []
+        "display_biases": [],
+        "show_interval": 100
     },
 }

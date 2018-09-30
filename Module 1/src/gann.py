@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as PLT
 import util.tflowtools as TFT
 from gann_module import GannModule
 from visualizer import Visualizer
@@ -18,7 +19,7 @@ class Gann:
 
     def __init__(self, dimensions, hidden_activation_function, output_activation_function, cost_function, learning_rate,
                  init_weight_range, optimizer, case, validation_interval, minibatch_size, steps, display_weights,
-                 display_biases, map_batch_size=0, map_layers=0, map_dendrograms=0):
+                 display_biases, map_batch_size=0, map_layers=None, map_dendrograms=None, show_interval=1):
 
         self.dimensions = dimensions
         self.hidden_activation_function = hidden_activation_function
@@ -43,6 +44,8 @@ class Gann:
         self.error_history = []
         self.validation_history = []
         self.grabvars = []
+        self.grabvar_figures = []  # One matplotlib figure for each grabvar
+        self.show_interval = show_interval  # Frequency of showing grabbed variables
 
         # Build network
         self.build()
@@ -54,20 +57,17 @@ class Gann:
 
         self.modules[module_index].gen_probe(type, spec)
 
+    # Grabvars are displayed by my own code, so I have more control over the display format.  Each
+    # grabvar gets its own matplotlib figure in which to display its value.
+    def add_grabvar(self, module_index, type='wgt'):
+        self.grabvars.append(self.modules[module_index].get_variable(type))
+        self.grabvar_figures.append(PLT.figure())
+
     def add_grabvars(self):
-
-        def add_grabvar(grabvars, module_index, grab_type):
-            """ Add variable to be displayed by own code"""
-            grabvars.append(self.modules[module_index].get_variable(grab_type))
-
-        grabvars = []
-
         for weight in self.display_weights:
-            add_grabvar(grabvars, weight, grab_type='wgt')
+            self.add_grabvar(weight, type='wgt')
         for bias in self.display_biases:
-            add_grabvar(grabvars, bias, grab_type='bias')
-
-        return grabvars
+            self.add_grabvar(bias, type='bias')
 
     def build(self):
         """ Build network from input layer to output layer with all hidden layers """
@@ -105,8 +105,8 @@ class Gann:
         # Setup target vector
         self.target = tf.placeholder(tf.float64, shape=(None, g_module.output_size), name='Target')
 
-        # Add grabvars
-        # self.grabvars = self.add_grabvars()
+        # Setup grabvars
+        self.add_grabvars()
 
         # Configure learning
         self.configure_learning()
@@ -121,7 +121,7 @@ class Gann:
             self.error = tf.reduce_mean(tf.square(self.target - self.output),
                                         name="Mean-squared-error")
         elif self.cost_function == "cross-entropy":
-            self.error = - tf.reduce_mean(tf.reduce_sum(self.target * tf.log(self.output), [1]),
+            self.error = - tf.reduce_mean(tf.losses.softmax_cross_entropy(self.target, self.predictor),
                                           name='Cross-entropy-error')
         else:
             raise Exception("Invalid cost function")
@@ -142,16 +142,26 @@ class Gann:
         # Set trainer to minimize error
         self.trainer = optimizer.minimize(self.error, name="Backpropogation")
 
-    def run_one_step(self, operators, grab_vars, session, feed_dict, probed_vars=None):
+    def run_one_step(self, operators, feed_dict, grabbed_vars=None, probed_vars=None, dir='probeview',
+                  session=None, step=1, show_interval=1):
         """ Run one step in network """
 
-        if probed_vars is None:
-            results = session.run([operators, grab_vars], feed_dict=feed_dict)
+        sess = session if session else TFT.gen_initialized_session(dir=dir)
+        if probed_vars is not None:
+            results = sess.run([operators, grabbed_vars, probed_vars], feed_dict=feed_dict)
+            sess.probe_stream.add_summary(results[2], global_step=step)
         else:
-            results = session.run([operators, grab_vars, probed_vars],
-                                  feed_dict=feed_dict)
-            session.probe_stream.add_summary(results[2])
-        return results[0], results[1], session
+            results = sess.run([operators, grabbed_vars], feed_dict=feed_dict)
+        if show_interval and (step % show_interval == 0):
+            self.display_grabvars(results[1], grabbed_vars, step=step)
+        return results[0], results[1], sess
+
+    def display_grabvars(self, grabbed_vals, grabbed_vars, step=1):
+        names = [x.name for x in grabbed_vars]
+        msg = "Grabbed Variables at Step " + str(step)
+        print("\n" + msg, end="\n")
+        for i, v in enumerate(grabbed_vals):
+            if names: print("   " + names[i] + " = ", v, end="\n")
 
     def train(self, session, continued=False):
         """ Train network the desired number of steps, with intermittent validation testing """
@@ -172,7 +182,8 @@ class Gann:
             feeder = {self.input: inputs, self.target: targets}
 
             # Run one step
-            _,grabvals,_ = self.run_one_step(operators, grab_vars, session, feeder)
+            _,grabvals,_ = self.run_one_step(operators, feeder, grab_vars, session=session, step=step,
+                                             show_interval=self.show_interval)
 
             # Append error to error history
             self.error_history.append((step, grabvals[0]))
@@ -202,12 +213,12 @@ class Gann:
         if bestk:
             # Use in-top-k with k=1
             self.test_func = self.gen_match_counter(self.predictor, [TFT.one_hot_to_int(list(v)) for v in targets], k=1)
-        test_res, grabvals, _ = self.run_one_step(self.test_func, [], session=session, feed_dict=feeder)
+        test_res, grabvals, _ = self.run_one_step(self.test_func, feeder, [], session=session, show_interval=None)
         if not bestk:
             print('%s Set Error = %f ' % (msg, test_res))
         else:
             print('%s Set Correct Classifications = %f %%' % (msg, 100*(test_res/len(cases))))
-        return test_res  # self.error uses MSE, so this is a per-case value when bestk=None
+        return test_res
 
     def consider_validation_test(self, step, session):
         """ Check to see if validation testing should be done, based on desired validation step """
@@ -223,6 +234,29 @@ class Gann:
 
         cases = self.case.get_training_cases()
         self.test(session, cases, msg="Training", bestk=True)
+
+    def mapping(self):
+        self.add_mapping_grabvars()
+        names = [x.name for x in self.grabvars]
+        cases = self.case.get_testing_cases()[:self.map_batch_size]
+        inputs = [c[0] for c in cases]
+        targets = [c[1] for c in cases]
+        feeder = {self.input: inputs, self.target: targets}
+        results = self.current_session.run([self.output, self.grabvars], feed_dict=feeder)
+        fig_index = 0
+        for i, v in enumerate(results[1]):
+            if names: print("   " + names[i] + " = ", end="\n")
+            if type(v) == np.ndarray and len(v.shape) > 1:  # If v is a matrix, use hinton plotting
+                TFT.hinton_plot(v, fig=self.grabvar_figures[fig_index], title=names[i] + "mapping")
+                fig_index += 1
+            else:
+                print(v, end="\n\n")
+
+    def add_mapping_grabvars(self):
+        self.grabvars = []
+        for layer in self.map_layers:
+            self.add_grabvar(layer, type='wgt')
+
 
     @staticmethod
     def open_session(probe=False):
@@ -247,16 +281,22 @@ class Gann:
     def run(self):
         """ Run the network and visualize """
 
-        session = self.open_session()
+        self.current_session = self.open_session()
         # Run training and validation testing
-        self.train(session)
+        self.train(self.current_session)
         # Test on training set
-        self.test_on_training_set(session)
+        self.test_on_training_set(self.current_session)
         # Test on test set
-        self.test(session, self.case.get_testing_cases(), bestk=True)
-        # Close session
-        self.close_session(session)
+        self.test(self.current_session, self.case.get_testing_cases(), bestk=True)
 
         """ Visualization """
         viz = Visualizer()
-        # viz.plot_error(self.error_history, self.validation_history)
+        viz.plot_error(self.error_history, self.validation_history)
+
+        """ Mapping test """
+        if self.map_layers is not None:
+            self.mapping()
+            PLT.show()
+
+        # Close session
+        self.close_session(self.current_session)
