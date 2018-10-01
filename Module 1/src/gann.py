@@ -56,8 +56,6 @@ class Gann:
 
         self.modules[module_index].gen_probe(type, spec)
 
-    # Grabvars are displayed by my own code, so I have more control over the display format.  Each
-    # grabvar gets its own matplotlib figure in which to display its value.
     def add_grabvar(self, module_index, type='wgt'):
         self.grabvars.append(self.modules[module_index].get_variable(type))
 
@@ -67,7 +65,7 @@ class Gann:
         for bias in self.display_biases:
             self.add_grabvar(bias, type='bias')
 
-        self.add_grabvar(1, type='out')
+        # self.add_grabvar(1, type='out')
 
     def build(self):
         """ Build network from input layer to output layer with all hidden layers """
