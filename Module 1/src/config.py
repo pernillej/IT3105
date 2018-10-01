@@ -242,8 +242,8 @@ CONFIGS = {
         "steps": 10000,
         "map_layers": [],
         "map_dendrograms": [],
-        "display_weights": [0],
-        "display_biases": [0],
+        "display_weights": [],
+        "display_biases": [],
         "show_interval": 10000
     },
     "segment-counter": {

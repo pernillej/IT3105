@@ -102,11 +102,9 @@ class Gann:
 
         # Setup error function
         if self.cost_function == "mean-squared-error":
-            self.error = tf.reduce_mean(tf.square(self.target - self.output),
-                                        name="Mean-squared-error")
+            self.error = tf.losses.mean_squared_error(self.target, self.output)
         elif self.cost_function == "cross-entropy":
-            self.error = tf.reduce_mean(tf.losses.softmax_cross_entropy(self.target, self.output),
-                                          name='Cross-entropy-error')
+            self.error = tf.losses.softmax_cross_entropy(self.target, self.output)
         else:
             raise Exception("Invalid cost function")
 
