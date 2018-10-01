@@ -56,6 +56,19 @@ class Gann:
 
         self.modules[module_index].gen_probe(type, spec)
 
+    # Grabvars are displayed by my own code, so I have more control over the display format.  Each
+    # grabvar gets its own matplotlib figure in which to display its value.
+    def add_grabvar(self, module_index, type='wgt'):
+        self.grabvars.append(self.modules[module_index].get_variable(type))
+
+    def add_grabvars(self):
+        for weight in self.display_weights:
+            self.add_grabvar(weight, type='wgt')
+        for bias in self.display_biases:
+            self.add_grabvar(bias, type='bias')
+
+        self.add_grabvar(1, type='out')
+
     def build(self):
         """ Build network from input layer to output layer with all hidden layers """
 
@@ -91,6 +104,9 @@ class Gann:
 
         # Setup target vector
         self.target = tf.placeholder(tf.float64, shape=(None, g_module.output_size), name='Target')
+
+        # Setup grabvars
+        self.add_grabvars()
 
         # Configure learning
         self.configure_learning()
@@ -134,8 +150,16 @@ class Gann:
         else:
             results = sess.run([operators, grabbed_vars], feed_dict=feed_dict)
         if show_interval and (step % show_interval == 0):
-            self.display_grabvars(step=step)
+            # self.display_grabvars(step=step)
+            self.display_intermittent_grabvars(results[1], grabbed_vars, step=step)
         return results[0], results[1], sess
+
+    def display_intermittent_grabvars(self, grabbed_vals, grabbed_vars, step=1):
+        names = [x.name for x in grabbed_vars]
+        msg = "Grabbed Variables at Step " + str(step)
+        print("\n" + msg, end="\n")
+        for i, v in enumerate(grabbed_vals):
+            if names: print("   " + names[i] + " = ", v, end="\n")
 
     def display_grabvars(self, step=1):
         print("Creating figures for grabbed variables at step " + str(step))
@@ -144,6 +168,7 @@ class Gann:
             w_and_b.append(self.modules[w].get_variable('wgt'))
         for b in self.display_weights:
             w_and_b.append(self.modules[b].get_variable('bias'))
+        w_and_b.append(self.modules[1].get_variable('out'))
         names = [x.name for x in w_and_b]
         for i, v in enumerate(w_and_b):
             matrix = self.current_session.run(v)
@@ -226,25 +251,44 @@ class Gann:
         self.test(session, cases, msg="Training", bestk=True)
 
     def mapping(self):
-        figures = []
-        grabvars = []
-        for layer in self.map_layers:
-            grabvars.append(self.modules[layer].get_variable('wgt'))
-            figures.append(PLT.figure())
-        names = [x.name for x in grabvars]
         cases = self.case.get_testing_cases()[:self.map_batch_size]
         inputs = [c[0] for c in cases]
         targets = [c[1] for c in cases]
         feeder = {self.input: inputs, self.target: targets}
-        results = self.current_session.run([self.output, grabvars], feed_dict=feeder)
-        fig_index = 0
-        for i, v in enumerate(results[1]):
-            if type(v) == np.ndarray and len(v.shape) > 1:  # If v is a matrix, use hinton plotting
-                TFT.hinton_plot(v, fig=figures[fig_index], title=names[i] + "mapping")
-                fig_index += 1
-            else:
-                print(v, end="\n\n")
 
+        # Hinton
+        if len(self.map_layers) != 0:
+            figures = []
+            grabvars = []
+            for layer in self.map_layers:
+                grabvars.append(self.modules[layer].get_variable('wgt'))
+                figures.append(PLT.figure())
+            names = [x.name for x in grabvars]
+            results = self.current_session.run([self.predictor, grabvars], feed_dict=feeder)
+            fig_index = 0
+            for i, v in enumerate(results[1]):
+                if type(v) == np.ndarray and len(v.shape) > 1:  # If v is a matrix, use hinton plotting
+                    TFT.hinton_plot(v, fig=figures[fig_index], title=names[i] + "mapping")
+                    fig_index += 1
+                else:
+                    print(v, end="\n\n")
+
+        # Dendrogram
+        if len(self.map_dendrograms) != 0:
+            figures = []
+            grabvars = []
+            for layer in self.map_dendrograms:
+                grabvars.append(self.modules[layer].get_variable('out'))
+                figures.append(PLT.figure())
+            names = [x.name for x in grabvars]
+            results = self.current_session.run([self.predictor, grabvars], feed_dict=feeder)
+            fig_index = 0
+            for i, v in enumerate(results[1]):
+                if type(v) == np.ndarray and len(v.shape) > 1:
+                    fig_index += 1
+                    TFT.dendrogram(v, title=names[i] + "dendrogram")
+                else:
+                    print(v, end="\n\n")
 
     @staticmethod
     def open_session(probe=False):
@@ -282,7 +326,7 @@ class Gann:
         viz.plot_error(self.error_history, self.validation_history)
 
         """ Mapping test """
-        if len(self.map_layers) != 0:
+        if len(self.map_layers) != 0 or len(self.map_dendrograms) != 0:
             print("\n", "**** Running mapping test ***** ", "\n")
             self.mapping()
             PLT.show()

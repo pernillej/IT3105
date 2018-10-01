@@ -4,7 +4,7 @@ import data.mnist_basics as mnist
 
 DATA_SET_FUNCTIONS = {
         "parity": lambda: TFT.gen_all_parity_cases(num_bits=10, double=True),
-        "symmetry": lambda: TFT.gen_symvect_cases(vlen=101, count=2000),
+        "symmetry": lambda: TFT.gen_symvect_dataset(vlen=101, count=2000),
         "one-hot-autoencoder": lambda: TFT.gen_all_one_hot_cases(len=8),
         "dense-autoencoder": lambda: TFT.gen_dense_autoencoder_cases(count=2000, size=8, dr=(0.4, 0.7)),
         "bit-counter": lambda: TFT.gen_vector_count_cases(num=500, size=15),
