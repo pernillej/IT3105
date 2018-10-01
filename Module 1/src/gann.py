@@ -116,11 +116,13 @@ class Gann:
 
         # Setup error function
         if self.cost_function == "mean-squared-error":
-            self.error = tf.losses.mean_squared_error(self.target, self.output)
+            error = tf.losses.mean_squared_error(self.target, self.output)
         elif self.cost_function == "cross-entropy":
-            self.error = tf.losses.softmax_cross_entropy(self.target, self.output)
+            error = tf.losses.softmax_cross_entropy(self.target, self.output)
         else:
             raise Exception("Invalid cost function")
+
+        self.error = tf.reduce_mean(error, name="Error")
 
         # Setup optimizer
         if self.optimizer == "gradient-descent":
@@ -249,44 +251,49 @@ class Gann:
         self.test(session, cases, msg="Training", bestk=True)
 
     def mapping(self):
-        cases = self.case.get_testing_cases()[:self.map_batch_size]
-        inputs = [c[0] for c in cases]
-        targets = [c[1] for c in cases]
-        feeder = {self.input: inputs, self.target: targets}
+        """ Mapping test """
 
-        # Hinton
-        if len(self.map_layers) != 0:
+        cases = self.case.get_all_cases()
+        np.random.shuffle(cases)
+        batch = cases[:self.map_batch_size]
+
+        grabvals = []
+
+        for case in batch:
+            inputs = [case[0]]
+            targets = [case[1]]
+            feeder = {self.input: inputs, self.target: targets}
+
             figures = []
             grabvars = []
-            for layer in self.map_layers:
-                grabvars.append(self.modules[layer].get_variable('wgt'))
-                figures.append(PLT.figure())
-            names = [x.name for x in grabvars]
-            results = self.current_session.run([self.predictor, grabvars], feed_dict=feeder)
-            fig_index = 0
-            for i, v in enumerate(results[1]):
-                if type(v) == np.ndarray and len(v.shape) > 1:  # If v is a matrix, use hinton plotting
-                    TFT.hinton_plot(v, fig=figures[fig_index], title=names[i] + "mapping")
-                    fig_index += 1
-                else:
-                    print(v, end="\n\n")
-
-        # Dendrogram
-        if len(self.map_dendrograms) != 0:
-            figures = []
-            grabvars = []
-            for layer in self.map_dendrograms:
+            layers = set(self.map_layers + self.map_dendrograms)
+            for layer in layers:
                 grabvars.append(self.modules[layer].get_variable('out'))
-                figures.append(PLT.figure())
-            names = [x.name for x in grabvars]
             results = self.current_session.run([self.predictor, grabvars], feed_dict=feeder)
-            fig_index = 0
+
+            grabvals_per_case = []
             for i, v in enumerate(results[1]):
-                if type(v) == np.ndarray and len(v.shape) > 1:
-                    fig_index += 1
-                    TFT.dendrogram(v, title=names[i] + "dendrogram")
-                else:
-                    print(v, end="\n\n")
+                grabvals_per_case.append(v[0])
+
+            grabvals.append(grabvals_per_case)
+
+        grabvals_per_layer = []
+        for layer_index in range(len(self.map_layers)):
+            grabvals_per_layer.append([])
+            for i in range(len(batch)):
+                grabvals_per_layer[layer_index].append(grabvals[i][layer_index])
+
+        # Hinton plots
+        for layer in self.map_layers:
+            # TODO
+            print("Creating hinton figure for layer " + str(layer))
+
+        # Dendograms
+        labels = [TFT.bits_to_str(c[1]) for c in batch]
+        for layer in self.map_dendrograms:
+            print("Creating dendrogram figure for layer " + str(layer))
+            TFT.dendrogram(grabvals_per_layer[layer], labels, title="Dendrogram layer " + str(layer))
+
 
     @staticmethod
     def open_session(probe=False):
