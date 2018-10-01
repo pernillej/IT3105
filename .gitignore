@@ -3,7 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.py~
-*./probeview
+probeview/
+netsaver
 
 # C extensions
 *.so
