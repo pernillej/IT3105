@@ -128,3 +128,5 @@ class Case:
     def get_validation_cases(self): return self.validation_cases
 
     def get_testing_cases(self): return self.testing_cases
+
+    def get_all_cases(self): return self.training_cases + self.validation_cases + self.testing_cases
