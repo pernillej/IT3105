@@ -44,7 +44,6 @@ class Gann:
         self.error_history = []
         self.validation_history = []
         self.grabvars = []
-        self.grabvar_figures = []  # One matplotlib figure for each grabvar
         self.show_interval = show_interval  # Frequency of showing grabbed variables
 
         # Build network
@@ -56,20 +55,6 @@ class Gann:
         """ Probed variables are to be displayed in the Tensorboard. """
 
         self.modules[module_index].gen_probe(type, spec)
-
-    # Grabvars are displayed by my own code, so I have more control over the display format.  Each
-    # grabvar gets its own matplotlib figure in which to display its value.
-    def add_grabvar(self, module_index, type='wgt'):
-        self.grabvars.append(self.modules[module_index].get_variable(type))
-        self.grabvar_figures.append(PLT.figure())
-
-    def add_grabvars(self):
-        for weight in self.display_weights:
-            self.add_grabvar(weight, type='wgt')
-        for bias in self.display_biases:
-            self.add_grabvar(bias, type='bias')
-
-        # self.add_grabvar(1, type='out')
 
     def build(self):
         """ Build network from input layer to output layer with all hidden layers """
@@ -106,9 +91,6 @@ class Gann:
 
         # Setup target vector
         self.target = tf.placeholder(tf.float64, shape=(None, g_module.output_size), name='Target')
-
-        # Setup grabvars
-        self.add_grabvars()
 
         # Configure learning
         self.configure_learning()
@@ -233,7 +215,7 @@ class Gann:
     def consider_validation_test(self, step, session):
         """ Check to see if validation testing should be done, based on desired validation step """
 
-        if self.validation_interval and (step % self.validation_interval == 0):
+        if (self.validation_interval and (step % self.validation_interval == 0)) or step == 1:
             cases = self.case.get_validation_cases()
             if len(cases) > 0:
                 error = self.test(session, cases, msg="Validation")

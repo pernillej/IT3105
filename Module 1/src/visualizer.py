@@ -5,6 +5,8 @@ class Visualizer:
 
     @staticmethod
     def plot_error(error_history, validation_history):
+        fig = plt.figure()
+        fig.suptitle('Error and Validation', fontsize=18)
         # Change to proper format
         e_xs = [e[0] for e in error_history]
         e_ys = [e[1] for e in error_history]

@@ -67,7 +67,8 @@ CONFIGS = {
         "map_layers": [],
         "map_dendrograms": [],
         "display_weights": [],
-        "display_biases": []
+        "display_biases": [],
+        "show_interval": 1000
     },
     "yeast": {
         "dimensions": [8, 100, 50, 10],
@@ -224,11 +225,11 @@ CONFIGS = {
         "show_interval": 100
     },
     "bit-counter": {
-        "dimensions": [15, 10, 16],
+        "dimensions": [15, 100, 10, 16],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
-        "learning_rate": 0.0075,
+        "learning_rate": 0.01,
         "init_weight_range": (-0.5, 0.5),
         "optimizer": "adam",
         "data_source": "bit-counter",
@@ -238,12 +239,12 @@ CONFIGS = {
         "test_fraction": 0.1,
         "minibatch_size": 250,
         "map_batch_size": 0,
-        "steps": 2000,
+        "steps": 10000,
         "map_layers": [],
         "map_dendrograms": [],
-        "display_weights": [0, 1],
-        "display_biases": [0, 1],
-        "show_interval": 1000
+        "display_weights": [0],
+        "display_biases": [0],
+        "show_interval": 10000
     },
     "segment-counter": {
         "dimensions": [25, 100, 50, 9],
