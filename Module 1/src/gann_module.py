@@ -31,7 +31,7 @@ class GannModule:
 
         # Setup biases
         self.biases = tf.Variable(np.random.uniform(lower_weight_bound, upper_weight_bound,
-                                                    size=self.output_size),
+                                                    size=(1, self.output_size)),
                                   name=name + '-bias', trainable=True)
 
         # Setup outputs

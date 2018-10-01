@@ -69,6 +69,8 @@ class Gann:
         for bias in self.display_biases:
             self.add_grabvar(bias, type='bias')
 
+        # self.add_grabvar(1, type='out')
+
     def build(self):
         """ Build network from input layer to output layer with all hidden layers """
 
@@ -121,13 +123,12 @@ class Gann:
             self.error = tf.reduce_mean(tf.square(self.target - self.output),
                                         name="Mean-squared-error")
         elif self.cost_function == "cross-entropy":
-            self.error = - tf.reduce_mean(tf.losses.softmax_cross_entropy(self.target, self.predictor),
+            self.error = tf.reduce_mean(tf.losses.softmax_cross_entropy(self.target, self.output),
                                           name='Cross-entropy-error')
         else:
             raise Exception("Invalid cost function")
 
         # Setup optimizer
-        # TODO - Customize more?
         if self.optimizer == "gradient-descent":
             optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.learning_rate)
         elif self.optimizer == "rmsprop":
@@ -153,15 +154,24 @@ class Gann:
         else:
             results = sess.run([operators, grabbed_vars], feed_dict=feed_dict)
         if show_interval and (step % show_interval == 0):
-            self.display_grabvars(results[1], grabbed_vars, step=step)
+            self.display_grabvars(step=step)
         return results[0], results[1], sess
 
-    def display_grabvars(self, grabbed_vals, grabbed_vars, step=1):
-        names = [x.name for x in grabbed_vars]
-        msg = "Grabbed Variables at Step " + str(step)
-        print("\n" + msg, end="\n")
-        for i, v in enumerate(grabbed_vals):
-            if names: print("   " + names[i] + " = ", v, end="\n")
+    def display_grabvars(self, step=1):
+        print("Creating figures for grabbed variables at step " + str(step))
+        w_and_b = []
+        for w in self.display_weights:
+            w_and_b.append(self.modules[w].get_variable('wgt'))
+        for b in self.display_weights:
+            w_and_b.append(self.modules[b].get_variable('bias'))
+        names = [x.name for x in w_and_b]
+        for i, v in enumerate(w_and_b):
+            matrix = self.current_session.run(v)
+            if type(matrix) == np.ndarray and len(v.shape) > 1:
+                title = names[i] + " step: " + str(step)
+                TFT.display_matrix(matrix, title=title)
+            else:
+                print(v, end="\n\n")
 
     def train(self, session, continued=False):
         """ Train network the desired number of steps, with intermittent validation testing """
@@ -294,7 +304,8 @@ class Gann:
         viz.plot_error(self.error_history, self.validation_history)
 
         """ Mapping test """
-        if self.map_layers is not None:
+        if len(self.map_layers) != 0:
+            print("\n", "**** Running mapping test ***** ", "\n")
             self.mapping()
             PLT.show()
 
