@@ -20,7 +20,7 @@ CONFIGS = {
         "minibatch_size": 100,
         "map_batch_size": 10,
         "steps": 3000,
-        "map_layers": [],
+        "map_layers": [0, 1],
         "map_dendrograms": [],
         "display_weights": [],
         "display_biases": [],

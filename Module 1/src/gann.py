@@ -226,26 +226,24 @@ class Gann:
         self.test(session, cases, msg="Training", bestk=True)
 
     def mapping(self):
-        self.add_mapping_grabvars()
-        names = [x.name for x in self.grabvars]
+        figures = []
+        grabvars = []
+        for layer in self.map_layers:
+            grabvars.append(self.modules[layer].get_variable('wgt'))
+            figures.append(PLT.figure())
+        names = [x.name for x in grabvars]
         cases = self.case.get_testing_cases()[:self.map_batch_size]
         inputs = [c[0] for c in cases]
         targets = [c[1] for c in cases]
         feeder = {self.input: inputs, self.target: targets}
-        results = self.current_session.run([self.output, self.grabvars], feed_dict=feeder)
+        results = self.current_session.run([self.output, grabvars], feed_dict=feeder)
         fig_index = 0
         for i, v in enumerate(results[1]):
-            if names: print("   " + names[i] + " = ", end="\n")
             if type(v) == np.ndarray and len(v.shape) > 1:  # If v is a matrix, use hinton plotting
-                TFT.hinton_plot(v, fig=self.grabvar_figures[fig_index], title=names[i] + "mapping")
+                TFT.hinton_plot(v, fig=figures[fig_index], title=names[i] + "mapping")
                 fig_index += 1
             else:
                 print(v, end="\n\n")
-
-    def add_mapping_grabvars(self):
-        self.grabvars = []
-        for layer in self.map_layers:
-            self.add_grabvar(layer, type='wgt')
 
 
     @staticmethod
