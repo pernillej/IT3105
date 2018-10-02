@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as PLT
 import util.tflowtools as TFT
 from gann_module import GannModule
-from visualizer import Visualizer
 
 
 ACTIVATION_FUNCTIONS = {
@@ -150,18 +149,18 @@ class Gann:
         else:
             results = sess.run([operators, grabbed_vars], feed_dict=feed_dict)
         if show_interval and (step % show_interval == 0):
-            # self.display_grabvars(step=step)
-            self.display_intermittent_grabvars(results[1], grabbed_vars, step=step)
+            self.display_grabvars(step=step, feed_dict=feed_dict)
+            self.print_grabvars(results[1], grabbed_vars, step=step)
         return results[0], results[1], sess
 
-    def display_intermittent_grabvars(self, grabbed_vals, grabbed_vars, step=1):
+    def print_grabvars(self, grabbed_vals, grabbed_vars, step=1):
         names = [x.name for x in grabbed_vars]
         msg = "Grabbed Variables at Step " + str(step)
         print("\n" + msg, end="\n")
         for i, v in enumerate(grabbed_vals):
             if names: print("   " + names[i] + " = ", v, end="\n")
 
-    def display_grabvars(self, step=1):
+    def display_grabvars(self, step=1, feed_dict=None):
         print("Creating figures for grabbed variables at step " + str(step))
         w_and_b = []
         for w in self.display_weights:
@@ -171,7 +170,7 @@ class Gann:
         w_and_b.append(self.modules[1].get_variable('out'))
         names = [x.name for x in w_and_b]
         for i, v in enumerate(w_and_b):
-            matrix = self.current_session.run(v)
+            matrix = self.current_session.run(v, feed_dict=feed_dict)
             if type(matrix) == np.ndarray and len(v.shape) > 1:
                 title = names[i] + " step: " + str(step)
                 TFT.display_matrix(matrix, title=title)
@@ -296,6 +295,20 @@ class Gann:
             PLT.figure()
             TFT.dendrogram(grabvals_per_layer[layer], labels, title="Dendrogram layer " + str(layer))
 
+    def plot_error_and_validation_history(self):
+        fig = PLT.figure()
+        fig.suptitle('Error and Validation', fontsize=18)
+        # Change to proper format
+        e_xs = [e[0] for e in self.error_history]
+        e_ys = [e[1] for e in self.error_history]
+        v_xs = [e[0] for e in self.validation_history]
+        v_ys = [e[1] for e in self.validation_history]
+        PLT.plot(e_xs, e_ys, label='Error history')
+        PLT.plot(v_xs, v_ys, label='Validation error history')
+        PLT.xlabel("Steps")
+        PLT.ylabel("Error")
+        PLT.legend()
+
 
     @staticmethod
     def open_session(probe=False):
@@ -329,14 +342,14 @@ class Gann:
         self.test(self.current_session, self.case.get_testing_cases(), bestk=True)
 
         """ Visualization """
-        viz = Visualizer()
-        viz.plot_error(self.error_history, self.validation_history)
+        self.plot_error_and_validation_history()
 
         """ Mapping test """
         if len(self.map_layers) != 0 or len(self.map_dendrograms) != 0:
             print("\n", "**** Running mapping test ***** ", "\n")
             self.mapping()
-            PLT.show()
+
+        PLT.show()
 
         # Close session
         self.close_session(self.current_session)
