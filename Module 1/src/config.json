@@ -41,7 +41,7 @@
         "map_dendrograms": [],
         "display_weights": [],
         "display_biases": [],
-        "show_interval": 10000
+        "show_interval": 10001
     },
     "glass": {
         "dimensions": [9, 80, 80, 6],
@@ -63,7 +63,7 @@
         "map_dendrograms": [],
         "display_weights": [],
         "display_biases": [],
-        "show_interval": 10000
+        "show_interval": 10001
     },
     "yeast": {
         "dimensions": [8, 150, 120, 60, 10],
@@ -85,7 +85,7 @@
         "map_dendrograms": [],
         "display_weights": [],
         "display_biases": [],
-        "show_interval": 21000
+        "show_interval": 20001
     },
     "hackers-choice": {
         "dimensions": [11, 200, 175, 100, 7],
@@ -129,7 +129,7 @@
         "map_dendrograms": [],
         "display_weights": [],
         "display_biases": [],
-        "show_interval": 2000
+        "show_interval": 2001
     },
     "parity": {
         "dimensions": [10, 12, 6, 2],
@@ -147,11 +147,11 @@
         "minibatch_size": 100,
         "map_batch_size": 10,
         "steps": 10000,
-        "map_layers": [0, 1, 2],
-        "map_dendrograms": [0, 1, 2],
-        "display_weights": [0, 1, 2],
-        "display_biases": [0, 1, 2],
-        "show_interval": 10000
+        "map_layers": [],
+        "map_dendrograms": [],
+        "display_weights": [],
+        "display_biases": [],
+        "show_interval": 10001
     },
     "symmetry": {
         "dimensions": [101, 50, 2],
@@ -173,7 +173,7 @@
         "map_dendrograms": [],
         "display_weights": [],
         "display_biases": [],
-        "show_interval": 4000
+        "show_interval": 4001
     },
     "one-hot-autoencoder": {
         "dimensions": [8, 50, 8],
@@ -195,7 +195,7 @@
         "map_dendrograms": [],
         "display_weights": [],
         "display_biases": [],
-        "show_interval": 10000
+        "show_interval": 10001
     },
     "dense-autoencoder": {
         "dimensions": [8, 50, 8],
@@ -217,7 +217,7 @@
         "map_dendrograms": [1],
         "display_weights": [],
         "display_biases": [],
-        "show_interval": 1000
+        "show_interval": 1001
     },
     "bit-counter": {
         "dimensions": [15, 80, 16],
@@ -239,7 +239,7 @@
         "map_dendrograms": [],
         "display_weights": [],
         "display_biases": [],
-        "show_interval": 10000
+        "show_interval": 10001
     },
     "segment-counter": {
         "dimensions": [25, 80, 9],
@@ -261,6 +261,6 @@
         "map_dendrograms": [],
         "display_weights": [],
         "display_biases": [],
-        "show_interval": 10000
+        "show_interval": 10001
     }
 }
