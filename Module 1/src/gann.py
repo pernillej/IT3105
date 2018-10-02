@@ -264,10 +264,9 @@ class Gann:
             targets = [case[1]]
             feeder = {self.input: inputs, self.target: targets}
 
-            figures = []
             grabvars = []
-            layers = set(self.map_layers + self.map_dendrograms)
-            for layer in layers:
+            layers = len(self.dimensions) - 1
+            for layer in range(layers):
                 grabvars.append(self.modules[layer].get_variable('out'))
             results = self.current_session.run([self.predictor, grabvars], feed_dict=feeder)
 
@@ -278,20 +277,23 @@ class Gann:
             grabvals.append(grabvals_per_case)
 
         grabvals_per_layer = []
-        for layer_index in range(len(self.map_layers)):
+        for layer_index in range(len(self.dimensions) - 1):
             grabvals_per_layer.append([])
             for i in range(len(batch)):
                 grabvals_per_layer[layer_index].append(grabvals[i][layer_index])
 
         # Hinton plots
+        if len(self.map_layers) != 0:
+            TFT.hinton_plot(np.array([c[0] for c in batch]), title="Hinton plot inputs")
         for layer in self.map_layers:
-            # TODO
             print("Creating hinton figure for layer " + str(layer))
+            TFT.hinton_plot(np.array(grabvals_per_layer[layer]), title="Hinton plot layer" + str(layer))
 
         # Dendograms
         labels = [TFT.bits_to_str(c[1]) for c in batch]
         for layer in self.map_dendrograms:
             print("Creating dendrogram figure for layer " + str(layer))
+            PLT.figure()
             TFT.dendrogram(grabvals_per_layer[layer], labels, title="Dendrogram layer " + str(layer))
 
 

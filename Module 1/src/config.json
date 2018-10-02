@@ -1,16 +1,12 @@
-ACTIVATION_FUNCTION_OPTIONS = ["softmax", "relu", "sigmoid", "tanh"]
-COST_FUNCTION_OPTIONS = ["mean-squared-error", "cross-entropy"]
-OPTIMIZER_OPTIONS = ["gradient-descent", "rmsprop", "adam", "adagrad"]
 
-# TODO - Setup to meet reasonably good
-CONFIGS = {
+{
     "custom": {
-        "dimensions": [8, 50, 8],
+        "dimensions": [8, 4, 8],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.0001,
-        "init_weight_range": (-0.5, 0.5),
+        "init_weight_range": [-0.5, 0.5],
         "optimizer": "adam",
         "data_source": "one-hot-autoencoder",
         "case_fraction": 1,
@@ -32,7 +28,7 @@ CONFIGS = {
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.0075,
-        "init_weight_range": (-0.5, 0.5),
+        "init_weight_range": [-0.5, 0.5],
         "optimizer": "adam",
         "data_source": "wine",
         "case_fraction": 1,
@@ -54,7 +50,7 @@ CONFIGS = {
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.0075,
-        "init_weight_range": (-0.5, 0.5),
+        "init_weight_range": [-0.5, 0.5],
         "optimizer": "adam",
         "data_source": "glass",
         "case_fraction": 1,
@@ -76,7 +72,7 @@ CONFIGS = {
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.0075,
-        "init_weight_range": (-0.5, 0.5),
+        "init_weight_range": [-0.5, 0.5],
         "optimizer": "adam",
         "data_source": "yeast",
         "case_fraction": 1,
@@ -92,13 +88,13 @@ CONFIGS = {
         "display_biases": [],
         "show_interval": 100
     },
-    "hackers-choice": {  # Iris data-set
+    "hackers-choice": {
         "dimensions": [4, 100, 50, 3],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.0075,
-        "init_weight_range": (-0.5, 0.5),
+        "init_weight_range": [-0.5, 0.5],
         "optimizer": "adam",
         "data_source": "hackers-choice",
         "case_fraction": 1,
@@ -120,7 +116,7 @@ CONFIGS = {
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.0001,
-        "init_weight_range": (-0.1, 0.1),
+        "init_weight_range": [-0.1, 0.1],
         "optimizer": "adam",
         "data_source": "mnist",
         "case_fraction": 0.1,
@@ -142,7 +138,7 @@ CONFIGS = {
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.005,
-        "init_weight_range": (-0.5, 0.5),
+        "init_weight_range": [-0.5, 0.5],
         "optimizer": "adam",
         "data_source": "parity",
         "case_fraction": 1,
@@ -164,7 +160,7 @@ CONFIGS = {
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.0075,
-        "init_weight_range": (-0.5, 0.5),
+        "init_weight_range": [-0.5, 0.5],
         "optimizer": "adam",
         "data_source": "symmetry",
         "case_fraction": 1,
@@ -186,7 +182,7 @@ CONFIGS = {
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.0075,
-        "init_weight_range": (-0.5, 0.5),
+        "init_weight_range": [-0.5, 0.5],
         "optimizer": "adam",
         "data_source": "one-hot-autoencoder",
         "case_fraction": 1,
@@ -208,7 +204,7 @@ CONFIGS = {
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.0075,
-        "init_weight_range": (-0.5, 0.5),
+        "init_weight_range": [-0.5, 0.5],
         "optimizer": "adam",
         "data_source": "dense-autoencoder",
         "case_fraction": 1,
@@ -230,7 +226,7 @@ CONFIGS = {
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.01,
-        "init_weight_range": (-0.5, 0.5),
+        "init_weight_range": [-0.5, 0.5],
         "optimizer": "adam",
         "data_source": "bit-counter",
         "case_fraction": 1,
@@ -252,7 +248,7 @@ CONFIGS = {
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
         "learning_rate": 0.0075,
-        "init_weight_range": (-0.5, 0.5),
+        "init_weight_range": [-0.5, 0.5],
         "optimizer": "adam",
         "data_source": "segment-counter",
         "case_fraction": 1,
@@ -267,5 +263,5 @@ CONFIGS = {
         "display_weights": [],
         "display_biases": [],
         "show_interval": 100
-    },
+    }
 }
