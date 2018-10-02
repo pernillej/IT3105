@@ -1,9 +1,10 @@
 from gann import Gann, GannModule
 from case import Case
-from config import CONFIGS
+import json
+import matplotlib.pyplot as PLT
 
 
-def main(case):
+def main(case_type):
     """Setup scenario-defining parameters and run
 
     Keyword arguments:
@@ -30,6 +31,13 @@ def main(case):
     '''
     Setup Scenario Parameters
     '''
+    with open("./config.json") as json_data:
+        configs = json.load(json_data, )
+
+    json_data.close()
+
+    case = configs[case_type]
+
     dimensions = case["dimensions"]
     hidden_activation_function = case["hidden_activation_function"]
     output_activation_function = case["output_activation_function"]
@@ -52,7 +60,7 @@ def main(case):
     show_interval = case["show_interval"]
 
     '''
-    The Training and Testing Scheme
+    The Training and Testing Scheme and Optional Visualization
     '''
     # Create case
     case = Case(data_source, validation_fraction, test_fraction, case_fraction=case_fraction)
@@ -66,26 +74,27 @@ def main(case):
     # Run training with intermittent validation testing, then test on training set, then test on test set
     gann.run()
 
-    '''
-    Visualization
-    '''
 
-    # TODO - The sets of corresponding activation levels for user-chosen layers that result from a post-training mapping
-    #  run (as described in details file).
-
-    # TODO - Dendrograms (also described details file), which graphically display relationships between input patterns
-    # and the hidden-layer activations that they invoke.
-
-
+ACTIVATION_FUNCTION_OPTIONS = ["softmax", "relu", "sigmoid", "tanh"]
+COST_FUNCTION_OPTIONS = ["mean-squared-error", "cross-entropy"]
+OPTIMIZER_OPTIONS = ["gradient-descent", "rmsprop", "adam", "adagrad"]
 CASES = ["custom", "wine", "glass", "yeast", "hackers-choice", "mnist", "parity", "symmetry", "one-hot-autoencoder",
          "dense-autoencoder", "bit-counter", "segment-counter"]
 
 
 if __name__ == '__main__':
 
-    case = CONFIGS["custom"]
-
-    main(case)
+    quit = False
+    while not quit:
+        print("Choose case:")
+        for i in range(len(CASES)):
+            print(str(i) + ". " + CASES[i])
+        case_type = int(input("Enter number of case wanted: "))
+        main(CASES[case_type])
+        print("Remember to save updated json file!!!")
+        quit_input = input("Continue? (y/n) ")
+        if quit_input.lower() == "n":
+            quit = True
 
 
 

@@ -42,7 +42,6 @@ class Case:
 
     def organize_cases(self):
         cases = self.cases
-        print(cases)
         np.random.shuffle(cases)  # Randomly shuffle all cases
         if self.case_fraction != 1.0:  # Reduce huge data files
             sep = round(len(self.cases) * self.case_fraction)
