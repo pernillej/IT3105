@@ -115,13 +115,11 @@ class Gann:
 
         # Setup error function
         if self.cost_function == "mean-squared-error":
-            error = tf.losses.mean_squared_error(self.target, self.output)
+            self.error = tf.losses.mean_squared_error(self.target, self.output)
         elif self.cost_function == "cross-entropy":
-            error = tf.losses.softmax_cross_entropy(self.target, self.output)
+            self.error = tf.losses.softmax_cross_entropy(self.target, self.output)
         else:
             raise Exception("Invalid cost function")
-
-        self.error = tf.reduce_mean(error, name="Error")
 
         # Setup optimizer
         if self.optimizer == "gradient-descent":
@@ -161,21 +159,22 @@ class Gann:
             if names: print("   " + names[i] + " = ", v, end="\n")
 
     def display_grabvars(self, step=1, feed_dict=None):
-        print("Creating figures for grabbed variables at step " + str(step))
         w_and_b = []
         for w in self.display_weights:
             w_and_b.append(self.modules[w].get_variable('wgt'))
         for b in self.display_weights:
             w_and_b.append(self.modules[b].get_variable('bias'))
-        w_and_b.append(self.modules[1].get_variable('out'))
-        names = [x.name for x in w_and_b]
-        for i, v in enumerate(w_and_b):
-            matrix = self.current_session.run(v, feed_dict=feed_dict)
-            if type(matrix) == np.ndarray and len(v.shape) > 1:
-                title = names[i] + " step: " + str(step)
-                TFT.display_matrix(matrix, title=title)
-            else:
-                print(v, end="\n\n")
+        # w_and_b.append(self.modules[1].get_variable('out'))
+        if len(w_and_b) != 0:
+            print("Creating figures for grabbed variables at step " + str(step))
+            names = [x.name for x in w_and_b]
+            for i, v in enumerate(w_and_b):
+                matrix = self.current_session.run(v, feed_dict=feed_dict)
+                if type(matrix) == np.ndarray and len(v.shape) > 1:
+                    title = names[i] + " step: " + str(step)
+                    TFT.display_matrix(matrix, title=title)
+                else:
+                    print(v, end="\n\n")
 
     def train(self, session, continued=False):
         """ Train network the desired number of steps, with intermittent validation testing """
@@ -289,11 +288,20 @@ class Gann:
             TFT.hinton_plot(np.array(grabvals_per_layer[layer]), title="Hinton plot layer" + str(layer))
 
         # Dendograms
-        labels = [TFT.bits_to_str(c[1]) for c in batch]
+        labels = []
+        input_labels = [TFT.bits_to_str(c[0]) for c in batch]
+        '''
+        output_labels = [TFT.bits_to_str(c[1]) for c in batch]
+        for i in range(len(output_labels)):
+            label = input_labels[i]
+            label = label + " (" + output_labels[i] + ")"
+            labels.append(label)
+        '''
+        labels = input_labels
         for layer in self.map_dendrograms:
             print("Creating dendrogram figure for layer " + str(layer))
             PLT.figure()
-            TFT.dendrogram(grabvals_per_layer[layer], labels, title="Dendrogram layer " + str(layer))
+            TFT.dendrogram(grabvals_per_layer[layer], labels, title="Dendrogram with inputs of layer " + str(layer))
 
     def plot_error_and_validation_history(self):
         fig = PLT.figure()
