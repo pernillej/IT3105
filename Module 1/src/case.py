@@ -72,7 +72,10 @@ class Case:
         for i in range(len(feautures)):
             target = [0] * 10
             target[classes[i]] = 1
-            cases.append([feautures[i], target])
+            feauture = []
+            for f in feautures[i]:
+                feauture.append(f/255)
+            cases.append([feauture, target])
 
         return cases
 
