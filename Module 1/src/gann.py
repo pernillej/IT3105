@@ -64,7 +64,7 @@ class Gann:
         for bias in self.display_biases:
             self.add_grabvar(bias, type='bias')
 
-        # self.add_grabvar(1, type='out')
+        # self.add_grabvar(2, type='out')
 
     def build(self):
         """ Build network from input layer to output layer with all hidden layers """
@@ -283,6 +283,7 @@ class Gann:
         # Hinton plots
         if len(self.map_layers) != 0:
             TFT.hinton_plot(np.array([c[0] for c in batch]), title="Hinton plot inputs")
+            # TFT.hinton_plot(np.array([c[1] for c in batch]), title="Hinton plot targets")
         for layer in self.map_layers:
             print("Creating hinton figure for layer " + str(layer))
             TFT.hinton_plot(np.array(grabvals_per_layer[layer]), title="Hinton plot layer" + str(layer))

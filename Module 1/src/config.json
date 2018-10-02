@@ -88,26 +88,26 @@
         "show_interval": 21000
     },
     "hackers-choice": {
-        "dimensions": [4, 50, 3],
+        "dimensions": [11, 200, 175, 100, 7],
         "hidden_activation_function": "relu",
         "output_activation_function": "softmax",
         "cost_function": "mean-squared-error",
-        "learning_rate": 0.001,
-        "init_weight_range": [-0.5, 0.5],
+        "learning_rate": 0.002,
+        "init_weight_range": [-0.1, 0.1],
         "optimizer": "adam",
         "data_source": "hackers-choice",
         "case_fraction": 1,
         "validation_fraction": 0.1,
-        "validation_interval": 1000,
+        "validation_interval": 2000,
         "test_fraction": 0.1,
-        "minibatch_size": 50,
+        "minibatch_size": 64,
         "map_batch_size": 10,
         "steps": 10000,
-        "map_layers": [],
+        "map_layers": [3],
         "map_dendrograms": [],
         "display_weights": [],
         "display_biases": [],
-        "show_interval": 10000
+        "show_interval": 10001
     },
     "mnist": {
         "dimensions": [784, 20, 10],
