@@ -14,12 +14,12 @@
         "test_fraction": 0.1,
         "minibatch_size": 100,
         "map_batch_size": 10,
-        "steps": 3000,
+        "steps": 5000,
         "map_layers": [],
         "map_dendrograms": [],
         "display_weights": [],
         "display_biases": [],
-        "show_interval": 3000
+        "show_interval": 5001
     },
     "wine": {
         "dimensions": [11, 175, 125, 6],
@@ -151,7 +151,7 @@
         "map_dendrograms": [],
         "display_weights": [],
         "display_biases": [],
-        "show_interval": 10000
+        "show_interval": 10001
     },
     "symmetry": {
         "dimensions": [101, 80, 2],
