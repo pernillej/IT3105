@@ -8,6 +8,7 @@ from gann_module import GannModule
 ACTIVATION_FUNCTIONS = {
     "softmax": tf.nn.softmax,
     "relu": tf.nn.relu,
+    "leaky-relu": tf.nn.leaky_relu,
     "sigmoid": tf.nn.sigmoid,
     "tanh": tf.nn.tanh
 }
@@ -283,22 +284,13 @@ class Gann:
         # Hinton plots
         if len(self.map_layers) != 0:
             TFT.hinton_plot(np.array([c[0] for c in batch]), title="Hinton plot inputs")
-            # TFT.hinton_plot(np.array([c[1] for c in batch]), title="Hinton plot targets")
+            TFT.hinton_plot(np.array([c[1] for c in batch]), title="Hinton plot targets")
         for layer in self.map_layers:
             print("Creating hinton figure for layer " + str(layer))
             TFT.hinton_plot(np.array(grabvals_per_layer[layer]), title="Hinton plot layer" + str(layer))
 
         # Dendograms
-        labels = []
-        input_labels = [TFT.bits_to_str(c[0]) for c in batch]
-        '''
-        output_labels = [TFT.bits_to_str(c[1]) for c in batch]
-        for i in range(len(output_labels)):
-            label = input_labels[i]
-            label = label + " (" + output_labels[i] + ")"
-            labels.append(label)
-        '''
-        labels = input_labels
+        labels = [TFT.bits_to_str(c[0]) for c in batch]
         for layer in self.map_dendrograms:
             print("Creating dendrogram figure for layer " + str(layer))
             PLT.figure()
