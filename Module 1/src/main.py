@@ -75,7 +75,7 @@ def main(case_type):
     gann.run()
 
 
-ACTIVATION_FUNCTION_OPTIONS = ["softmax", "relu", "sigmoid", "tanh"]
+ACTIVATION_FUNCTION_OPTIONS = ["softmax", "relu", "leaky-relu", "sigmoid", "tanh"]
 COST_FUNCTION_OPTIONS = ["mean-squared-error", "cross-entropy"]
 OPTIMIZER_OPTIONS = ["gradient-descent", "rmsprop", "adam", "adagrad"]
 CASES = ["custom", "wine", "glass", "yeast", "hackers-choice", "mnist", "parity", "symmetry", "one-hot-autoencoder",
