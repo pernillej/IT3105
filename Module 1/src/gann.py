@@ -321,7 +321,11 @@ class Gann:
             TFT.hinton_plot(np.array(grabvals_per_layer[layer]), title="Hinton plot layer" + str(layer))
 
         # Dendograms
-        labels = [TFT.bits_to_str(c[0]) for c in batch]     # Labels are the input variables
+        if self.case.data_source in ["parity", "one-hot-autoencoder", "dense-autoencoder", "bit-counter",
+                                     "segment-counter"]:  # If input short labels are the input variables
+            labels = [TFT.bits_to_str(c[0]) for c in batch]
+        else:   # Else use target as label
+            labels = [TFT.bits_to_str(c[1]) for c in batch]
         for layer in self.map_dendrograms:
             print("Creating dendrogram figure for layer " + str(layer))
             PLT.figure()
