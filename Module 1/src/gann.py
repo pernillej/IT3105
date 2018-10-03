@@ -21,6 +21,7 @@ class Gann:
                  init_weight_range, optimizer, case, validation_interval, minibatch_size, steps, display_weights,
                  display_biases, map_batch_size=0, map_layers=None, map_dendrograms=None, show_interval=1):
 
+        # Network specifications
         self.dimensions = dimensions
         self.hidden_activation_function = hidden_activation_function
         self.output_activation_function = output_activation_function
@@ -28,10 +29,14 @@ class Gann:
         self.learning_rate = learning_rate
         self.init_weight_range = init_weight_range
         self.optimizer = optimizer
+
+        # Run specifications
         self.case = case
         self.validation_interval = validation_interval
         self.minibatch_size = minibatch_size
         self.steps = steps
+
+        # Grabvars specifications
         self.display_weights = display_weights
         self.display_biases = display_biases
 
@@ -40,6 +45,7 @@ class Gann:
         self.map_layers = map_layers
         self.map_dendrograms = map_dendrograms
 
+        # Internal variables
         self.modules = []
         self.error_history = []
         self.validation_history = []
@@ -49,7 +55,9 @@ class Gann:
         # Build network
         self.build()
 
-    def add_module(self, module): self.modules.append(module)
+    def add_module(self, module):
+        """ Module to list of modules """
+        self.modules.append(module)
 
     def generate_probe(self, module_index, type, spec):
         """ Probed variables are to be displayed in the Tensorboard. """
@@ -57,15 +65,15 @@ class Gann:
         self.modules[module_index].gen_probe(type, spec)
 
     def add_grabvar(self, module_index, type='wgt'):
+        """ Add single grabvar """
         self.grabvars.append(self.modules[module_index].get_variable(type))
 
     def add_grabvars(self):
+        """ Add grabvars to be displayed in console """
         for weight in self.display_weights:
             self.add_grabvar(weight, type='wgt')
         for bias in self.display_biases:
             self.add_grabvar(bias, type='bias')
-
-        # self.add_grabvar(2, type='out')
 
     def build(self):
         """ Build network from input layer to output layer with all hidden layers """
@@ -142,17 +150,18 @@ class Gann:
         """ Run one step in network """
 
         sess = session if session else TFT.gen_initialized_session(dir=dir)
-        if probed_vars is not None:
+        if probed_vars is not None:  # When using tensorboard
             results = sess.run([operators, grabbed_vars, probed_vars], feed_dict=feed_dict)
             sess.probe_stream.add_summary(results[2], global_step=step)
         else:
             results = sess.run([operators, grabbed_vars], feed_dict=feed_dict)
-        if show_interval and (step % show_interval == 0):
+        if show_interval and (step % show_interval == 0):  # Displaying grabvars
             self.display_grabvars(step=step, feed_dict=feed_dict)
             self.print_grabvars(results[1], grabbed_vars, step=step)
         return results[0], results[1], sess
 
     def print_grabvars(self, grabbed_vals, grabbed_vars, step=1):
+        """ Display grabvars in console """
         names = [x.name for x in grabbed_vars]
         msg = "Grabbed Variables at Step " + str(step)
         print("\n" + msg, end="\n")
@@ -160,12 +169,16 @@ class Gann:
             if names: print("   " + names[i] + " = ", v, end="\n")
 
     def display_grabvars(self, step=1, feed_dict=None):
+        """ Display grabvars in matrix figure """
+
+        # Collect grabvars
         w_and_b = []
         for w in self.display_weights:
             w_and_b.append(self.modules[w].get_variable('wgt'))
         for b in self.display_weights:
             w_and_b.append(self.modules[b].get_variable('bias'))
-        # w_and_b.append(self.modules[1].get_variable('out'))
+
+        # Do one run, no training etc., to grab appropriate matrix for display
         if len(w_and_b) != 0:
             print("Creating figures for grabbed variables at step " + str(step))
             names = [x.name for x in w_and_b]
@@ -183,10 +196,14 @@ class Gann:
         if not continued:
             self.error_history = []
 
+        # Get training cases
         cases = self.case.get_training_cases()
+
+        # Set operators and grabvars
         operators = [self.trainer]
         grab_vars = [self.error] + self.grabvars
 
+        # Run the specified amount of steps
         for step in range(1, self.steps + 1):
             # Create minibatch
             minibatch = self.get_minibatch(cases)
@@ -206,28 +223,33 @@ class Gann:
             self.consider_validation_test(step, session)
 
     def get_minibatch(self, cases):
-        """ Get minibatch from case-set """
-
+        """ Get random minibatch from case-set """
         np.random.shuffle(cases)
         minibatch = cases[:self.minibatch_size]
         return minibatch
 
     @staticmethod
     def gen_match_counter(logits, labels, k=1):
+        # For testing
         correct = tf.nn.in_top_k(tf.cast(logits, tf.float32), labels, k)  # Return number of correct outputs
         return tf.reduce_sum(tf.cast(correct, tf.int32))
 
     def test(self, session, cases, msg="Testing", bestk=False):
         """ Test on desired case-set, with our without in-top-k """
 
+        # Setup feeder dictionary
         inputs = [c[0] for c in cases]
         targets = [c[1] for c in cases]
         feeder = {self.input: inputs, self.target: targets}
+
+        # Setup operators
         self.test_func = self.error
         if bestk:
             # Use in-top-k with k=1
             self.test_func = self.gen_match_counter(self.predictor, [TFT.one_hot_to_int(list(v)) for v in targets], k=1)
         test_res, grabvals, _ = self.run_one_step(self.test_func, feeder, [], session=session, show_interval=None)
+
+        # Print results
         if not bestk:
             print('%s Set Error = %f ' % (msg, test_res))
         else:
@@ -252,29 +274,37 @@ class Gann:
     def mapping(self):
         """ Mapping test """
 
+        # Grab a random selection of all cases
         cases = self.case.get_all_cases()
         np.random.shuffle(cases)
         batch = cases[:self.map_batch_size]
 
         grabvals = []
 
+        # Run each case and collect grabvals
         for case in batch:
+            # Create feeder dictionary, with only one case
             inputs = [case[0]]
             targets = [case[1]]
             feeder = {self.input: inputs, self.target: targets}
 
+            # Setup grabvars
             grabvars = []
             layers = len(self.dimensions) - 1
             for layer in range(layers):
                 grabvars.append(self.modules[layer].get_variable('out'))
+
+            # One run on each case
             results = self.current_session.run([self.predictor, grabvars], feed_dict=feeder)
 
+            # Collect grabvals
             grabvals_per_case = []
             for i, v in enumerate(results[1]):
                 grabvals_per_case.append(v[0])
 
             grabvals.append(grabvals_per_case)
 
+        # Reformat to fit needs, sorting by layer not case
         grabvals_per_layer = []
         for layer_index in range(len(self.dimensions) - 1):
             grabvals_per_layer.append([])
@@ -283,6 +313,7 @@ class Gann:
 
         # Hinton plots
         if len(self.map_layers) != 0:
+            # Plot input and target plots for comparison
             TFT.hinton_plot(np.array([c[0] for c in batch]), title="Hinton plot inputs")
             TFT.hinton_plot(np.array([c[1] for c in batch]), title="Hinton plot targets")
         for layer in self.map_layers:
@@ -290,13 +321,14 @@ class Gann:
             TFT.hinton_plot(np.array(grabvals_per_layer[layer]), title="Hinton plot layer" + str(layer))
 
         # Dendograms
-        labels = [TFT.bits_to_str(c[0]) for c in batch]
+        labels = [TFT.bits_to_str(c[0]) for c in batch]     # Labels are the input variables
         for layer in self.map_dendrograms:
             print("Creating dendrogram figure for layer " + str(layer))
             PLT.figure()
             TFT.dendrogram(grabvals_per_layer[layer], labels, title="Dendrogram with inputs of layer " + str(layer))
 
     def plot_error_and_validation_history(self):
+        """ Plotting error and validation history """
         fig = PLT.figure()
         fig.suptitle('Error and Validation', fontsize=18)
         # Change to proper format
@@ -350,6 +382,7 @@ class Gann:
             print("\n", "**** Running mapping test ***** ", "\n")
             self.mapping()
 
+        # Show all plots collected, error and validation plot is always shown
         PLT.show()
 
         # Close session

@@ -31,11 +31,14 @@ def main(case_type):
     '''
     Setup Scenario Parameters
     '''
+
+    # Collect data from json config file and convert to python dictionary
     with open("./config.json") as json_data:
         configs = json.load(json_data, )
 
     json_data.close()
 
+    # Set case and scenario parameters
     case = configs[case_type]
 
     dimensions = case["dimensions"]
@@ -71,7 +74,8 @@ def main(case_type):
                 display_biases, map_batch_size=map_batch_size, map_layers=map_layers, map_dendrograms=map_dendrograms,
                 show_interval=show_interval)
 
-    # Run training with intermittent validation testing, then test on training set, then test on test set
+    # Run training with intermittent validation testing, then test on training set, then test on test set,
+    # resulting in an error and validation history plot and any additionally wanted visualizations
     gann.run()
 
 
@@ -83,6 +87,8 @@ CASES = ["custom", "wine", "glass", "yeast", "hackers-choice", "mnist", "parity"
 
 
 if __name__ == '__main__':
+    """ Main interface, with keyboard interaction, running in loop until 
+    user quits in the manner described on screen """
 
     quit = False
     while not quit:
@@ -91,6 +97,8 @@ if __name__ == '__main__':
             print(str(i) + ". " + CASES[i])
         case_type = int(input("Enter number of case wanted: "))
         main(CASES[case_type])
+        # Use has to close plot after case is done running (this will sometimes look slow) before code continues.
+        # Must remember to save updated json config file before running again
         print("Remember to save updated json file!!!")
         quit_input = input("Continue? (y/n) ")
         if quit_input.lower() == "n":

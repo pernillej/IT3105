@@ -9,7 +9,7 @@ class GannModule:
     def __init__(self, ann, index, input_variables, input_size, output_size, weight_range, activation_function):
         self.ann = ann
         self.index = index
-        self.input = input_variables  # Either the gann's input variable or the upstream module's output
+        self.input = input_variables  # Both the gann's input variable or the upstream module's output
         self.input_size = input_size  # Number of neurons feeding into this module
         self.output_size = output_size  # Number of neurons in this module
         self.weight_range = weight_range  # Lower and upper bound for random weight initializing
