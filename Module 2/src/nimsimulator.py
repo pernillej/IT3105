@@ -38,5 +38,5 @@ class POptions(Enum):
     """
 
     Player1 = 0
-    Player2 = 0
-    Mix = 3
+    Player2 = 1
+    Mix = 2
