@@ -1,13 +1,3 @@
-"""
-TODOs
-It should contain code that understands game states and
-a) produces initial game states,
-b) generates child states from a parent state,
-c) recognizes winning states,
-and many other functions associated with the domain
-
-"""
-
 from nim import Nim
 from nim import NimState
 import random
