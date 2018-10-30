@@ -3,14 +3,16 @@ from Simulator import NimSimulator
 """ Main interface, specifying user parameters """
 
 if __name__ == '__main__':
-    user_parameters = {
-        "g": 0,
-        "p": 0,
-        "m": 0,
-        "n": 0,
-        "k": 0,
-        "verbose": False
-    }
+    # User-specified parameters
+    G = 0
+    P = 0
+    M = 0
+    N = 0
+    K = 0
+    verbose = False
 
+    # Setup simulator
     sim = NimSimulator()
-    sim.simulate_batch(**user_parameters)
+
+    # Simulate one run of user parameters
+    sim.simulate(G=G, P=P, M=M, N=N, K=K, verbose=verbose)
