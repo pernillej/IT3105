@@ -1,45 +1,19 @@
-from nim import Nim
-from nim import NimState
-import random
-
-
 class StateManager:
     """ General State Manager class """
 
-    def __init__(self, game):
-        """
-        Initialize state manager with a game
-
-        :param game: Game for state manager to handle
-        """
-        self.game = game
-
-    def is_terminal(self, state):
+    def is_terminal(self):
         """
         Check if state is a terminal state
 
-        :param state: State to check
         :return: True if terminal, else False
         """
         pass
 
-    def generate_child_states(self, state):
+    def generate_child_states(self):
         """
         Generate all child states for given state
 
-        :param state: State to generate children from
         :return: List of child states
-        """
-        pass
-
-    def rollout(self, parent_state, state, M):
-        """
-        Do a rollout for the given state
-
-        :param parent_state: Parent state of state to perform rollout
-        :param state: State to perform rollout
-        :param M: Number of rollouts
-        :return:
         """
         pass
 
@@ -47,34 +21,62 @@ class StateManager:
 class NimStateManager(StateManager):
     """ Nim State Manager inheriting from the general state manager """
 
+    def __init__(self, p, n, k):
+        """
+        Initialize Nim state with:
 
-    def is_terminal(self, state):
-        if state.remaining_stones == 0:
-            return True
+        :param P: Current player
+        :param N: Number of pieces/stones left
+        :param K: Maximum number of pieces that can be removed
+        """
+        self.current_player = p  # 1 for Player 1, 2 for Player 2
+        self.n = n
+        self.k = k
 
-    def generate_child_states(self, state):
-        child_states = []  # Change to dict?
-        next_player = self.game.get_next_player()
+    def is_terminal(self):
+        return self.n == 0
 
-        for pieces in range(1, min([self.game.K, state.remaining_pieces]) + 1):
-            remaining_pieces = state.remaining_pieces - pieces
-            child_state = NimState(next_player, remaining_pieces)
-            child_states.append((child_state, pieces))
+    def generate_child_states(self):
+        child_states = []
+        for pieces in range(1, min([self.k, self.n]) + 1):
+            remaining_pieces = self.n - pieces
+            child_state = NimStateManager(3-self.current_player, remaining_pieces, self.k)
+            child_states.append(child_state)
         return child_states
 
-    def rollout(self, parent_state, state, M):
-        wins = [0, 0]  # Wins for Player 1 at index 0, wins for Player 2 at index 1
-        if self.is_terminal(state):
-            wins[parent_state.current_player] = M
-        else:
-            for _ in range(M):
-                game = Nim(state.current_player, state.remaining_pieces, self.game.K, verbose=False)
+    def get_n(self):
+        """
+        Return the amount of remaining pieces
 
-                while not game.finished:  # Behaviour policy here?
-                    pieces = random.randint(1, min([self.game.K, game.state.remaining_pieces]))
-                    game.select_pieces(pieces)
-                wins[game.winner] += 1
+        :return: Number of remaining pieces
+        """
+        return self.n
 
-        return wins
+    def get_k(self):
+        """
+        Returns the max amount of pieces that can be removed
+
+        :return: Max amount of pieces that can be removed
+        """
+        return self.k
+
+    def get_current_player(self):
+        """
+        Returns the current player
+
+        :return: 1 for Player 1, 2 for Player 2
+        """
+        return self.current_player
+
+    def get_next_player(self):
+        """
+        Return next player
+
+        :return: 1 for Player 1, 2 for Player 2
+        """
+        if self.current_player == 1:
+            return 2
+        elif self.current_player == 2:
+            return 1
 
 

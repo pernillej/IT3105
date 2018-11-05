@@ -1,14 +1,14 @@
-from Simulator import NimSimulator
+from simulator import NimSimulator
 
 """ Main interface, specifying user parameters """
 
 if __name__ == '__main__':
     # User-specified parameters
-    G = 0
-    P = 0
-    M = 0
-    N = 0
-    K = 0
+    G = 10
+    P = 1
+    M = 1000
+    N = 10
+    K = 3
     verbose = False
 
     # Setup simulator
@@ -16,3 +16,4 @@ if __name__ == '__main__':
 
     # Simulate one run of user parameters
     sim.simulate(G=G, P=P, M=M, N=N, K=K, verbose=verbose)
+
