@@ -43,7 +43,9 @@ class NimSimulator(Simulator):
 
                 current_player = root_node.get_state().get_current_player()
                 next_player = root_node.get_state().get_next_player()
-                action_node, removed_pieces, remaining_pieces = mcts.get_action(root_node, M, starting_player)
+                action_node = mcts.get_action(root_node, M, starting_player)
+                removed_pieces = root_node.get_state().get_n() - action_node.get_state().get_n()
+                remaining_pieces = action_node.get_state().get_n()
 
                 if verbose:
                     print("Player " + str(current_player) + " selected " + str(removed_pieces) + " pieces."

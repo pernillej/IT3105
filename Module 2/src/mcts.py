@@ -19,8 +19,6 @@ class MCTS:
 
         current_player = node.get_state().get_current_player()
         action_node = None
-        selected_pieces = 0
-        remaining_pieces = node.get_state().get_n()
 
         highest_qsa = -float('inf')
         lowest_qsa = float('inf')
@@ -32,14 +30,12 @@ class MCTS:
                 if qsa > highest_qsa:
                     highest_qsa = qsa
                     action_node = child
-                    selected_pieces = node.get_state().get_n() - action_node.get_state().get_n()
             else:  # If the current player is the opposing player, the best score is the lowest Q(s,a)
                 if qsa < lowest_qsa:
                     lowest_qsa = qsa
                     action_node = child
-                    selected_pieces = node.get_state().get_n() - action_node.get_state().get_n()
 
-        return action_node, selected_pieces, remaining_pieces - selected_pieces
+        return action_node
 
     def update(self, node, M, current_player):
         """
@@ -96,19 +92,22 @@ class MCTS:
         :param current_player: The current player
         :return: Returns a leaf node based on the tree policy
         """
-        if not node.children:  # Breaks recursion and return the best leaf
+        if not node.children:  # Breaks recursion and returns the best leaf node
             return node
 
         best_child = node
         highest_value = -float('inf')
         lowest_value = float('inf')
         opposing_player = node.get_state().get_current_player() != current_player
+
         for child in node.children:
             value = self.tree_policy_value(node, child, opposing_player)  # Get value of node based on the tree policy
+
             if opposing_player and value < lowest_value:
                 # The best value is the lowest value when the player is the opposing player
                 best_child = child
                 lowest_value = value
+
             elif (not opposing_player) and value > highest_value:
                 best_child = child
                 highest_value = value
@@ -135,6 +134,7 @@ class MCTS:
         """
         while not node.get_state().is_terminal():
             node = node.get_random_child()
+
         winner = node.get_state().get_next_player()  # The winner is the previous player, which is also the next player
         return winner
 
