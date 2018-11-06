@@ -31,7 +31,7 @@ class NimSimulator(Simulator):
         for i in range(0, G):
             if P == 'mix':
                 starting_player = random.randint(1, 2)
-                print(starting_player)
+                print("Starting player game " + str(i) + ": " + str(starting_player))
             else:
                 starting_player = P  # 1 for player 1, 2 for player 2
 

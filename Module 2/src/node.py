@@ -15,7 +15,7 @@ class Node:
 
         self.children = []  # Empty until node expansion is done by mcts
         self.wins = 0
-        self.visits = 1  # Node generated upon first visit
+        self.visits = 1  # To avoid zero division
 
     def get_state(self):
         """
