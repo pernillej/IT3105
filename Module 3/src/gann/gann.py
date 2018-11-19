@@ -391,3 +391,30 @@ class Gann:
 
         # Close session
         self.close_session(self.current_session)
+
+    #   ******* Saving GANN Parameters (weights and biases) *******************
+    # This is useful when you want to use "runmore" to do additional training on a network.
+    # spath should have at least one directory (e.g. netsaver), which you will need to create ahead of time.
+    # This is also useful for situations where you want to first train the network, then save its parameters
+    # (i.e. weights and biases), and then run the trained network on a set of test cases where you may choose to
+    # monitor the network's activity (via grabvars, probes, etc) in a different way than you monitored during
+    # training.
+
+    def save_session_params(self, spath='netsaver/my_saved_session', sess=None, step=0):
+        session = sess if sess else self.current_session
+        state_vars = []
+        for m in self.modules:
+            vars = [m.getvar('wgt'), m.getvar('bias')]
+            state_vars = state_vars + vars
+        self.state_saver = tf.train.Saver(state_vars)
+        self.saved_state_path = self.state_saver.save(session, spath, global_step=step)
+
+    def reopen_current_session(self):
+        self.current_session = TFT.copy_session(self.current_session)  # Open a new session with same tensorboard stuff
+        self.current_session.run(tf.global_variables_initializer())
+        self.restore_session_params()  # Reload old weights and biases to continued from where we last left off
+
+    def restore_session_params(self, path=None, sess=None):
+        spath = path if path else self.saved_state_path
+        session = sess if sess else self.current_session
+        self.state_saver.restore(session, spath)
