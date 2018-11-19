@@ -22,11 +22,10 @@ if __name__ == '__main__':
     optimizer = ""
 
     K = 0  # The number (K) of ANETs to be cached in preparation for a TOPP.
-    G = 0  # The number of games, G, to be played between any two ANET-based agents
-    # that meet during the round-robin play of the TOPP.
+    G = 0  # The number of games, G, to be played between any two ANET-based agents during the round-robin TOPP.
 
     verbose = False
 
-    # Run RL
+    # TODO: Run RL
 
-    # Play TOPP
+    # TODO: Play TOPP
