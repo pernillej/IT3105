@@ -142,18 +142,12 @@ class MCTS:
             for i, value in enumerate(actor_prediction):
                 if node_indexes[i] == 1:  # If move possible, append
                     best_move.append(value)
+
+            # Find the move with the max value
             max_value = max(best_move)
             max_index = best_move.index(max_value)
-            child_nodes = node.get_children()
-            node = child_nodes[max_index]
-
-            # next best move
-            if len(best_move) > 2:
-                next_max_value = sorted(best_move)[-2]
-                next_max_index = best_move.index(next_max_value)
-                random_number = random.randint(0, 100)
-                if random_number < 10:
-                    node = child_nodes[next_max_index]
+            children = node.get_children()
+            node = children[max_index]
 
         winner = node.get_state().get_winner()
         return winner
