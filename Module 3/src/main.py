@@ -10,16 +10,16 @@ OPTIMIZER_OPTIONS = ["gradient-descent", "rmsprop", "adam", "adagrad"]
 
 if __name__ == '__main__':
     # Hex board
-    hex_dim = 3  # 3-8
+    hex_dim = 5  # 3-8
 
     # MCTS.py parameters
     episodes = 1
     starting_player = 1
-    rollouts = 120
+    rollouts = 20
 
     # Gann parameters
     learning_rate = 0.001
-    gann_dim = [hex_dim*hex_dim*2 + 2, 64, 32, hex_dim**2]
+    gann_dim = [hex_dim**2 + 1, 10, hex_dim**2]
     hidden_activation_function = "relu"
     cost_function = "mean-squared-error"
     optimizer = "adam"

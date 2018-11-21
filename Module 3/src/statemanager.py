@@ -1,5 +1,6 @@
 from hexcell import HexCell
-import copy
+import pickle
+import numpy as np
 
 
 class StateManager:
@@ -105,7 +106,7 @@ class HexStateManager(StateManager):
 
         for i, row in enumerate(self.hex_board):
             for j, cell in enumerate(row):
-                copy_board = copy.deepcopy(self.hex_board)
+                copy_board = pickle.loads(pickle.dumps(self.hex_board, -1))
                 if cell.is_empty():
 
                     if self.player == 1:
@@ -183,7 +184,6 @@ class HexStateManager(StateManager):
             self.is_terminal()
         return self.winner
 
-    # Converts the 3d array into a simple 1d array to be used in the NN. Last two bits denotes player
     def flatten_to_case(self, board):
         """
         Flatten the board state into a case for use in a neural network
@@ -191,17 +191,18 @@ class HexStateManager(StateManager):
         :param board: The board state to flatten
         :return: The case resulting from the board state
         """
-        simple_array = []
+
+        values = []
+        flat_board = self.flatten(board)
+        for cell in flat_board:
+            values += [cell.get_player()]
+
         player = self.get_current_player()
-        for row in range(len(board)):
-            for element in range(len(board)):
-                for value in board[row][element].value:
-                    simple_array.append(value)
         if player == 1:
-            simple_array.extend((1, 0))
+            values += [1]
         elif player == 2:
-            simple_array.extend((0, 1))
-        return simple_array
+            values += [2]
+        return np.array(values)
 
     def print_state(self):
         """
@@ -212,29 +213,28 @@ class HexStateManager(StateManager):
         m = size * 2 - 1
         matrix = [[' ' * maxlen] * m for _ in range(m)]
 
-        board = self.flatten()
+        board = self.flatten(self.hex_board)
 
         for n in range(size * size):
             r = n // size
             c = n % size
-            value = self.get_hexcell_player(board[n])
+            value = self.get_hexcell_player(board[n].value)
             matrix[c + r][size - r - 1 + c] = '{0:{1}}'.format(value, maxlen)
 
         print('\n'.join(''.join(row) for row in matrix))
         print('')
 
-    def flatten(self):
+    def flatten(self, board):
         """
         Flatten the current board state to a 1d array
 
         :return: 1d array of current board state
         """
-        board = self.hex_board
         new_board = []
-        for row in range(len(board)):
-            for element in range(len(board)):
-                state_to_string = board[row][element].value
-                new_board.append(state_to_string)
+        for i in range(len(board)):
+            for j in range(len(board)):
+                state = board[i][j]
+                new_board.append(state)
         return new_board
 
     def get_hexcell_player(self, cell_state):
