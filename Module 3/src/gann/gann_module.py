@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-import util.tflowtools as TFT
+import gann.tflowtools as TFT
 
 
 class GannModule:

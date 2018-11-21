@@ -5,6 +5,9 @@ import random
 class MCTS:
     """ Monte Carlo Tree Search class """
 
+    def __init__(self, gann):
+        self.gann = gann
+
     def get_action(self, node, M, starting_player):
         """
         Return the action/child of the given node with the best Q(s,a) score
@@ -123,19 +126,36 @@ class MCTS:
         if not node.children:
             node.set_children(node.get_children())
 
-    @staticmethod
-    def leaf_evaluation(node):
+    def leaf_evaluation(self, node):
         """
         Evaluate the leaf node based on the result of a rollout using the default/behavior policy.
-        Default policy: Chooses a random child/action until a terminal state is reached
+        Default policy: Actor network
 
         :param node: Leaf node to evaluate
         :return: Returns the winner
         """
-        while not node.get_state().is_terminal():
-            node = node.get_random_child()
+        while not node.state.is_terminal():
+            node_indexes = node.state.generate_child_indexes()
+            case = node.state.flatten_to_case(node.state.hex_board)  # Not independent from Hex
+            actor_prediction = self.gann.predict(case)
+            best_move = []
+            for i, value in enumerate(actor_prediction):
+                if node_indexes[i] == 1:  # If move possible, append
+                    best_move.append(value)
+            max_value = max(best_move)
+            max_index = best_move.index(max_value)
+            child_nodes = node.get_children()
+            node = child_nodes[max_index]
 
-        winner = node.get_state().get_next_player()  # The winner is the previous player, which is also the next player
+            # next best move
+            if len(best_move) > 2:
+                next_max_value = sorted(best_move)[-2]
+                next_max_index = best_move.index(next_max_value)
+                random_number = random.randint(0, 100)
+                if random_number < 10:
+                    node = child_nodes[next_max_index]
+
+        winner = node.get_state().get_winner()
         return winner
 
     @staticmethod

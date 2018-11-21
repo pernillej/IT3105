@@ -80,6 +80,9 @@ class Node:
         """
         self.wins += wins
 
+    def set_wins(self, wins):
+        self.wins = wins
+
     def get_visits(self):
         """
         Get the amount of times this node has been visited
@@ -95,4 +98,7 @@ class Node:
         :param visits: The amount of visits to increase with
         """
         self.visits += visits
+
+    def set_visits(self, visits):
+        self.visits = visits
 
