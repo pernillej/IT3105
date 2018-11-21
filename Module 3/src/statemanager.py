@@ -129,46 +129,74 @@ class HexStateManager(StateManager):
         return indexes
 
     def is_terminal(self):
-        unvisited_1 = []
-        unvisited_2 = []
-        visited_1 = []
-        visited_2 = []
+        player1 = self.check_player1_terminal()
+        player2 = self.check_player2_terminal()
 
-        # checks for player 1
-        for cell in self.hex_board[0]:
-            if cell.value == [1, 0]:
-                unvisited_1.append(cell)
-        while len(unvisited_1):
-            current_node = unvisited_1[0]
-            # adds unvisited neighbours
-            neighbours = self.neighbours.get(str(current_node.position))
+        return player1 or player2
+
+    def check_player1_terminal(self):
+        """
+        Check if player 1 has reached a terminal state.
+        Player 1 playes from left to right
+
+        :return: True if terminal state reached, else False
+        """
+        unvisited = []
+        visited = []
+
+        for row in self.hex_board:
+            if row[0].value == [1, 0]:  # Add first element of every row to unvisited
+                unvisited.append(row[0])
+        while len(unvisited):
+            current_cell = unvisited[0]
+
+            # Adds unvisited neighbours
+            neighbours = self.neighbours.get(str(current_cell.position))
             for neighbour in neighbours:
                 neighbour_object = self.hex_board[neighbour[0]][neighbour[1]]
-                if neighbour_object.value == [1, 0] and neighbour_object not in visited_1 and neighbour_object not in \
-                        unvisited_1:
-                    unvisited_1.append(neighbour_object)
-            visited_1.append(unvisited_1.pop(0))
-            # checks if node is on opposite side for player 1
-            if current_node in self.hex_board[-1]:
+                if neighbour_object.value == [1, 0] and neighbour_object not in visited and neighbour_object not in \
+                        unvisited:
+                    unvisited.append(neighbour_object)
+
+            # Add current cell to visited and remove from unvisited
+            visited.append(unvisited.pop(0))
+
+            # Checks if cell is on opposite side
+            if current_cell in [x[-1] for x in self.hex_board]:
                 self.winner = 1
                 return True
 
-        # checks for player 2
-        for row in self.hex_board:
-            if row[0].value == [0, 1]:
-                unvisited_2.append(row[0])
-        while len(unvisited_2):
-            current_node = unvisited_2[0]
-            # adds unvisited neighbours
-            neighbours = self.neighbours.get(str(current_node.position))
+        return False
+
+    def check_player2_terminal(self):
+        """
+        Check if player 2 has reached a terminal state.
+        Player 2 plays from right to left (aka. top to bottom)
+
+        :return: True if terminal state reached, else False
+        """
+        unvisited = []
+        visited = []
+
+        for cell in self.hex_board[0]:
+            if cell.value == [0, 1]:  # Add first element of every column to unvisited
+                unvisited.append(cell)
+        while len(unvisited):
+            current_cell = unvisited[0]
+
+            # Adds unvisited neighbours
+            neighbours = self.neighbours.get(str(current_cell.position))
             for neighbour in neighbours:
                 neighbour_object = self.hex_board[neighbour[0]][neighbour[1]]
-                if neighbour_object.value == [0, 1] and neighbour_object not in visited_2 and neighbour_object not in \
-                        unvisited_2:
-                    unvisited_2.append(neighbour_object)
-            visited_2.append(unvisited_2.pop(0))
-            # checks if node is on opposite side for player 2
-            if current_node in [x[-1] for x in self.hex_board]:
+                if neighbour_object.value == [0, 1] and neighbour_object not in visited and neighbour_object not in \
+                        unvisited:
+                    unvisited.append(neighbour_object)
+
+            # Add current cell to visited and remove from unvisited
+            visited.append(unvisited.pop(0))
+
+            # Checks if cell is on opposite side
+            if current_cell in self.hex_board[-1]:
                 self.winner = 2
                 return True
 

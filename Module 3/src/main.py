@@ -10,10 +10,10 @@ OPTIMIZER_OPTIONS = ["gradient-descent", "rmsprop", "adam", "adagrad"]
 
 if __name__ == '__main__':
     # Hex board
-    hex_dim = 5  # 3-8
+    hex_dim = 3  # 3-8
 
     # MCTS.py parameters
-    episodes = 1
+    episodes = 5
     starting_player = 1
     rollouts = 20
 
