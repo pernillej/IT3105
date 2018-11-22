@@ -15,8 +15,7 @@ class MCTS:
         :param node: The node to get an action from
         :param M: The amount of rollouts/simulations per episode
         :param starting_player: The starting player of the batch of games
-        :return: The proposed best action, the amount of pieces the action would remove,
-        and the remaining pieces after the action is performed
+        :return: The proposed best action
         """
         self.update(node, M, starting_player)  # Update the tree using mcts
 

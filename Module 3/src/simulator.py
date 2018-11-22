@@ -5,6 +5,7 @@ import random
 
 
 class Simulator:
+    """ Simulator class """
 
     def __init__(self, actor_network, episodes, starting_player, rollouts, hex_dims, num_saved_actors):
         """
@@ -24,7 +25,8 @@ class Simulator:
 
         self.actor = actor_network
         self.save_folder = "netsaver/"
-        self.save_interval = self.episodes / (num_saved_actors - 1)  # Save interval for the actor network parameters
+        self.save_interval = self.episodes / num_saved_actors  # Save interval for the actor network parameters
+        print(self.save_interval)
         self.num_saved_actors = num_saved_actors
 
     def simulate(self, verbose=False):
@@ -45,6 +47,7 @@ class Simulator:
         # Save actor network state before training
         if self.num_saved_actors != 0:
             self.actor.save_session_params(self.save_folder, self.actor.current_session, 0)
+            print("Saved actor on episode 0")
 
         for i in range(self.episodes):  # For ga in number actual games:
             if self.starting_player == 'mix':
@@ -109,6 +112,7 @@ class Simulator:
             #   • Save ANET’s current parameters for later use in tournament play.
             if (i + 1) % self.save_interval == 0 and self.num_saved_actors != 0:
                 self.actor.save_session_params(self.save_folder, self.actor.current_session, (i + 1))
+                print("Saved actor before episode " + str(i+1))
 
         print("FINAL STATISTICS: ")
         print("Player 1" + " won " + str(wins_player1) + " of " + str(self.episodes) + " games " + " (" + str(
