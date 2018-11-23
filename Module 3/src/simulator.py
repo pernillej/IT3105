@@ -7,7 +7,8 @@ import random
 class Simulator:
     """ Simulator class """
 
-    def __init__(self, actor_network, episodes, starting_player, rollouts, hex_dims, num_saved_actors):
+    def __init__(self, actor_network, episodes, starting_player, rollouts, hex_dims, num_saved_actors,
+                 save_folder="tempnetsaver/"):
         """
         Initiate simulator with specified parameters
 
@@ -24,9 +25,8 @@ class Simulator:
         self.hex_dims = hex_dims
 
         self.actor = actor_network
-        self.save_folder = "netsaver/"
-        self.save_interval = self.episodes / num_saved_actors  # Save interval for the actor network parameters
-        print(self.save_interval)
+        self.save_folder = save_folder
+        self.save_interval = self.episodes / (num_saved_actors-1)  # Save interval for the actor network parameters
         self.num_saved_actors = num_saved_actors
 
     def simulate(self, verbose=False):
@@ -47,7 +47,8 @@ class Simulator:
         # Save actor network state before training
         if self.num_saved_actors != 0:
             self.actor.save_session_params(self.save_folder, self.actor.current_session, 0)
-            print("Saved actor on episode 0")
+            print("Saved actor before starting")
+            print("-" * 49)
 
         for i in range(self.episodes):  # For ga in number actual games:
             if self.starting_player == 'mix':
@@ -57,11 +58,13 @@ class Simulator:
 
             if verbose:
                 print("Game " + str(i) + " - Player " + str(starting_player) + " starting.")
+            else:
+                print("Game " + str(i))
 
             # Initialize the actual game board (Ba) to an empty board.
             # sinit ← starting board state
             # Initialize the Monte Carlo Tree (MCT) to a single root, which represents sinit
-            root_node = Node(parent=None, state=HexStateManager(player=self.starting_player, dimensions=self.hex_dims))
+            root_node = Node(parent=None, state=HexStateManager(player=starting_player, dimensions=self.hex_dims))
             root_node.state.generate_initial_state()
 
             episode_player = starting_player
@@ -113,6 +116,7 @@ class Simulator:
             if (i + 1) % self.save_interval == 0 and self.num_saved_actors != 0:
                 self.actor.save_session_params(self.save_folder, self.actor.current_session, (i + 1))
                 print("Saved actor before episode " + str(i+1))
+                print("-" * 49)
 
         print("FINAL STATISTICS: ")
         print("Player 1" + " won " + str(wins_player1) + " of " + str(self.episodes) + " games " + " (" + str(
@@ -157,13 +161,15 @@ class Simulator:
         :return: The normalized distribution
         """
         normalized = []
+        # Generate one-hot list
         one_hot_visit_distribution = [0] * len(distribution)
-        # generates one_hot list
+
+        # Set the max value to 1
         max_value = max(distribution)
         max_index = distribution.index(max_value)
         one_hot_visit_distribution[max_index] = 1
 
-        # generates normalized list
+        # Normalize
         for value in distribution:
             normalized.append(value / sum(distribution))
 

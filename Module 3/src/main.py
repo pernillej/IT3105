@@ -9,18 +9,60 @@ OPTIMIZER_OPTIONS = ["gradient-descent", "rmsprop", "adam", "adagrad"]
 
 """ Main interface, specifying user parameters """
 
-if __name__ == '__main__':
-    # Hex board
-    hex_dim = 3  # 3-8
 
-    # MCTS.py parameters
-    episodes = 50
-    starting_player = 1
+def play_best_topp():
+    # Hex board
+    hex_dim = 5  # 3-8
+
+    # MCTS parameters
+    episodes = 300
+    starting_player = "mix"
     rollouts = 100
 
     # Gann parameters
     learning_rate = 0.001
-    gann_dim = [hex_dim**2 + 1, 10, hex_dim**2]
+    gann_dim = [hex_dim ** 2 + 1, 64, 36, hex_dim ** 2]
+    hidden_activation_function = "relu"
+    cost_function = "cross-entropy"
+    optimizer = "adam"
+    minibatch_size = 50
+
+    K = 4  # The number (K) of ANETs to be cached in preparation for a TOPP.
+    G = 25  # The number of games, G, to be played between any two ANET-based agents during the round-robin TOPP.
+
+    verbose = False
+
+    # Create actor network to run RL
+    actor_network = Gann(dimensions=gann_dim, hidden_activation_function=hidden_activation_function,
+                         cost_function=cost_function, learning_rate=learning_rate, optimizer=optimizer,
+                         minibatch_size=minibatch_size, case=ReplayBuffer())
+
+    # TODO: Remove simulation after best network found
+    # Run reinforcement learning algorithm
+    sim = Simulator(actor_network, episodes, starting_player, rollouts, hex_dim,
+                    num_saved_actors=K, save_folder="bestnetsaver/")
+    sim.simulate(verbose=verbose)
+
+    # Play TOPP with previously trained actors
+    topp = TOPP(games=G, hex_dims=hex_dim, num_actors=K, saved_offset=int(episodes / (K-1)),
+                actor_dims=gann_dim, hidden_activation_function=hidden_activation_function,
+                cost_function=cost_function,
+                learning_rate=learning_rate, optimizer=optimizer, saved_path="bestnetsaver/")
+    topp.play_tournament(verbose=verbose)
+
+
+def main(simulate=True, topp=True):
+    # Hex board
+    hex_dim = 3  # 3-8
+
+    # MCTS parameters
+    episodes = 20
+    starting_player = "mix"
+    rollouts = 10
+
+    # Gann parameters
+    learning_rate = 0.001
+    gann_dim = [hex_dim ** 2 + 1, 10, hex_dim ** 2]
     hidden_activation_function = "relu"
     cost_function = "mean-squared-error"
     optimizer = "adam"
@@ -29,21 +71,29 @@ if __name__ == '__main__':
     K = 5  # The number (K) of ANETs to be cached in preparation for a TOPP.
     G = 10  # The number of games, G, to be played between any two ANET-based agents during the round-robin TOPP.
 
-    verbose = True
+    verbose = False
 
-    # Create actor network to run RL
-    actor_network = Gann(dimensions=gann_dim, hidden_activation_function=hidden_activation_function,
-                         cost_function=cost_function, learning_rate=learning_rate, optimizer=optimizer,
-                         minibatch_size=minibatch_size, case=ReplayBuffer())
+    if simulate:
+        # Create actor network to run RL
+        actor_network = Gann(dimensions=gann_dim, hidden_activation_function=hidden_activation_function,
+                             cost_function=cost_function, learning_rate=learning_rate, optimizer=optimizer,
+                             minibatch_size=minibatch_size, case=ReplayBuffer())
 
-    # Run reinforcement learning algorithm
-    sim = Simulator(actor_network, episodes, starting_player, rollouts, hex_dim, num_saved_actors=K)
-    sim.simulate(verbose=verbose)
+        # Run reinforcement learning algorithm
+        sim = Simulator(actor_network, episodes, starting_player, rollouts, hex_dim,
+                        num_saved_actors=K, save_folder="tempnetsaver/")
+        sim.simulate(verbose=verbose)
 
-    # TODO: Play TOPP
+    if topp:  # Play TOPP with just saved network
+        topp = TOPP(games=G, hex_dims=hex_dim, num_actors=K, saved_offset=int(episodes / (K-1)),
+                    actor_dims=gann_dim, hidden_activation_function=hidden_activation_function,
+                    cost_function=cost_function,
+                    learning_rate=learning_rate, optimizer=optimizer, saved_path="tempnetsaver/")
+        topp.play_tournament(verbose=verbose)
 
-    topp = TOPP(games=G, hex_dims=hex_dim, num_actors=K, saved_offset=int(episodes/K),
-                actor_dims=gann_dim, hidden_activation_function=hidden_activation_function, cost_function=cost_function,
-                 learning_rate=learning_rate, optimizer=optimizer, saved_path="netsaver/")
-    topp.play_tournament(verbose=True)
+
+if __name__ == '__main__':
+    # main(simulate=True, topp=True)
+    play_best_topp()
+
 

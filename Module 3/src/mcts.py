@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import time
 
 
 class MCTS:
@@ -47,6 +48,8 @@ class MCTS:
         :param M: The amount of rollouts/simulations per episode
         :param current_player: The current player
         """
+
+        start_time = time.time()
         for i in range(0, M):
 
             # Use tree policy to chose the next pre-existing child node.
@@ -64,6 +67,9 @@ class MCTS:
             # Propagate information about F (such as the winner), along the entire path from F back to S and then
             # back to R. That info updates node statistics that influence the tree policy.
             self.backpropagate(best_node, winner, current_player)
+
+            if (time.time() - start_time) > 5:  # Stop rollouts if timer exceeds 5 seconds
+                break
 
     @staticmethod
     def tree_policy_value(parent, child, opposing_player):
@@ -135,7 +141,7 @@ class MCTS:
         """
         while not node.state.is_terminal():
             node_indexes = node.state.generate_child_indexes()
-            case = node.state.flatten_to_case(node.state.hex_board)  # Not independent from Hex
+            case = node.state.flatten_to_case(node.state.hex_board)  # Not entirely independent from Hex
             actor_prediction = self.gann.predict(case)
             best_move = []
             for i, value in enumerate(actor_prediction):
@@ -146,7 +152,11 @@ class MCTS:
             max_value = max(best_move)
             max_index = best_move.index(max_value)
             children = node.get_children()
-            node = children[max_index]
+
+            if len(best_move) > 2 and random.randint(0, 100) < 10:  # Chose random move 10% of the time
+                node = random.choice(children)
+            else:  # Else choose the one with the highest value
+                node = children[max_index]
 
         winner = node.get_state().get_winner()
         return winner

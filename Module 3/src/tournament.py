@@ -9,7 +9,7 @@ class TOPP:
     """ Tournament of Progressive Policies (TOPP) class """
 
     def __init__(self, games, hex_dims, num_actors, saved_offset, actor_dims, hidden_activation_function, cost_function,
-                 learning_rate, optimizer, saved_path="netsaver/"):
+                 learning_rate, optimizer, saved_path="bestnetsaver/"):
         """
         Initialize Tournament of Progressive Policies (TOPP) object and load actors
 
@@ -69,9 +69,11 @@ class TOPP:
 
         :param verbose: Verbose mode, if true details of the game are printed (default = False)
         """
+        print("-" * 49)
         print("Starting tournament with", len(self.actors), "players")
-        print("-" * 49)
-        print("-" * 49)
+        if verbose:
+            print("-" * 49)
+            print("-" * 49)
         for i in range(len(self.actors) - 1):
             for j in range(len(self.actors) - 1, i, -1):
                 # Get actors for the series
@@ -91,12 +93,14 @@ class TOPP:
 
                     # Play single game
                     self.play_game([actor1, actor2], starting_player, verbose=verbose)
-                    print("-" * 49)
+                    if verbose:
+                        print("-" * 49)
 
                     # Rotate starting player
                     starting_player = self.rotate_player(starting_player)
 
-                print("-" * 49)
+                if verbose:
+                    print("-" * 49)
 
         print("-" * 49)
         print("FINAL STATISTICS:")
@@ -148,7 +152,7 @@ class Actor:
     """ Actor class for Tournament of Progressive Policies (TOPP) play"""
 
     def __init__(self, dimensions, hidden_ativation_function, cost_function, learning_rate, optimizer, saved_offset,
-                 saved_path="netsaver/"):
+                 saved_path="bestnetsaver/"):
         """
         Initialize actor object and load saved network
 
@@ -206,7 +210,7 @@ class Actor:
         :return: The proposed best action
         """
         node_indexes = node.state.generate_child_indexes()
-        case = node.state.flatten_to_case(node.state.hex_board)  # Not independent from Hex
+        case = node.state.flatten_to_case(node.state.hex_board)
         actor_prediction = self.actor.predict(case)
         best_move = []
         for i, value in enumerate(actor_prediction):

@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as PLT
 import gann.tflowtools as TFT
 from gann.gann_module import GannModule
 
@@ -183,7 +182,7 @@ class Gann:
             TFT.close_session(self.current_session)
         self.current_session.close()
 
-    def save_session_params(self, spath='netsaver/my_saved_session', sess=None, step=0):
+    def save_session_params(self, spath='bestnetsaver/', sess=None, step=0):
         session = sess if sess else self.current_session
         state_vars = []
         for m in self.modules:
