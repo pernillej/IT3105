@@ -16,14 +16,14 @@ def play_best_topp():
 
     # MCTS parameters
     episodes = 300
-    starting_player = "mix"
+    starting_player = 1
     rollouts = 100
 
     # Gann parameters
     learning_rate = 0.001
     gann_dim = [hex_dim ** 2 + 1, 64, 36, hex_dim ** 2]
     hidden_activation_function = "relu"
-    cost_function = "cross-entropy"
+    cost_function = "mean-squared-error"
     optimizer = "adam"
     minibatch_size = 50
 
@@ -31,17 +31,6 @@ def play_best_topp():
     G = 25  # The number of games, G, to be played between any two ANET-based agents during the round-robin TOPP.
 
     verbose = False
-
-    # Create actor network to run RL
-    actor_network = Gann(dimensions=gann_dim, hidden_activation_function=hidden_activation_function,
-                         cost_function=cost_function, learning_rate=learning_rate, optimizer=optimizer,
-                         minibatch_size=minibatch_size, case=ReplayBuffer())
-
-    # TODO: Remove simulation after best network found
-    # Run reinforcement learning algorithm
-    sim = Simulator(actor_network, episodes, starting_player, rollouts, hex_dim,
-                    num_saved_actors=K, save_folder="bestnetsaver/")
-    sim.simulate(verbose=verbose)
 
     # Play TOPP with previously trained actors
     topp = TOPP(games=G, hex_dims=hex_dim, num_actors=K, saved_offset=int(episodes / (K-1)),
@@ -93,7 +82,7 @@ def main(simulate=True, topp=True):
 
 
 if __name__ == '__main__':
-    # main(simulate=True, topp=True)
-    play_best_topp()
+    main(simulate=True, topp=True)
+    # play_best_topp()
 
 
